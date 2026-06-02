@@ -138,17 +138,19 @@ export function QuizView({ level, onFinish }: QuizViewProps) {
                 <CorrectStar show={gotItRight} reduce={!!reduce} />
               </div>
               <p className="text-4xl font-extrabold tabular-nums text-ink sm:text-6xl">{format24(q.correct)}</p>
-              <div className="grid w-full max-w-md grid-cols-2 gap-2 sm:gap-3">
+              <div className="grid w-full grid-cols-2 gap-2 sm:gap-3" style={{ maxWidth: 'min(92vw, 30rem, 46vh)' }}>
                 {q.options.map((opt, i) => (
                   <motion.button
                     key={opt}
                     onClick={() => choose(opt)}
                     aria-label={`Opção ${i + 1}`}
-                    className={`flex items-center justify-center rounded-2xl p-1 sm:p-2 ${feedbackClass(opt, picked, q.correct)}`}
+                    className={`flex aspect-square items-center justify-center overflow-hidden rounded-2xl border-2 p-2 shadow-sm transition-colors sm:p-3 ${optionFrameClass(opt, picked, q.correct)}`}
                     animate={pop(opt, picked, q.correct, !!reduce)}
                   >
-                    <div className="aspect-square" style={{ width: 'min(30vw, 17vh)' }}>
-                      <AnalogClock total={opt} size={130} show24={false} />
+                    {/* Square box that fills the card's padding-box so all four
+                        clocks are the same size and centered with equal margins. */}
+                    <div className="flex aspect-square h-full w-full items-center justify-center">
+                      <AnalogClock total={opt} size={320} show24={false} />
                     </div>
                   </motion.button>
                 ))}
@@ -189,6 +191,18 @@ function CorrectStar({ show, reduce }: { show: boolean; reduce: boolean }) {
 function pop(opt: number, picked: number | null, correct: number, reduce: boolean) {
   if (reduce || picked === null || opt !== correct) return { scale: 1 }
   return { scale: [1, 1.06, 1], transition: { duration: 0.45, ease: 'easeInOut' as const } }
+}
+
+/**
+ * Border + background only, for the digital→analog option cards. The card itself
+ * owns its size (aspect-square) and padding so the four clocks stay uniform and
+ * centered; this just colours the frame for the answer feedback.
+ */
+function optionFrameClass(opt: number, picked: number | null, correct: number): string {
+  if (picked === null) return 'border-ring/40 bg-white active:scale-95'
+  if (opt === correct) return 'border-green-500 bg-green-100'
+  if (opt === picked) return 'border-red-300 bg-red-50'
+  return 'border-ink/10 bg-white opacity-50'
 }
 
 function feedbackClass(opt: number, picked: number | null, correct: number): string {
