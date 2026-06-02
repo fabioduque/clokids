@@ -26,4 +26,24 @@ describe('profileStore', () => {
     localStorage.setItem(STORAGE_KEY, '{"settings":null}')
     expect(loadProfile()).toEqual(DEFAULT_PROFILE)
   })
+
+  it('merges defaults for settings missing from an older stored profile', () => {
+    // An older profile saved before `showSeconds` existed: it must come back
+    // with showSeconds === false (the default), while preserving stored values.
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        settings: { snap: 5, showWords: false, voice: true, dayNight: true, showHandLegend: false },
+        progress: { unlockedLevel: 2, starsByLevel: { 1: 5, 2: 3, 3: 0 } },
+      }),
+    )
+    const loaded = loadProfile()
+    expect(loaded.settings.showSeconds).toBe(false)
+    expect(loaded.settings.snap).toBe(5)
+    expect(loaded.settings.showWords).toBe(false)
+    expect(loaded.settings.dayNight).toBe(true)
+    expect(loaded.settings.showHandLegend).toBe(false)
+    expect(loaded.progress.unlockedLevel).toBe(2)
+    expect(loaded.progress.starsByLevel[1]).toBe(5)
+  })
 })

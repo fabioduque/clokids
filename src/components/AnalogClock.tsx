@@ -10,6 +10,7 @@ export interface AnalogClockProps {
   showHandLegend?: boolean // reserved; legend lives in HandLegend
   step?: number // snap step (minutes) for the minute hand; if omitted -> not interactive
   onChange?: (total: number) => void
+  seconds?: number | null // 0–59; when a number, draw a thin seconds hand (ticks)
 }
 
 const VB = 200
@@ -20,7 +21,7 @@ function polar(r: number, deg: number): { x: number; y: number } {
   return { x: C + r * Math.sin(a), y: C - r * Math.cos(a) }
 }
 
-export function AnalogClock({ total, size = 280, show24 = true, step, onChange }: AnalogClockProps) {
+export function AnalogClock({ total, size = 280, show24 = true, step, onChange, seconds }: AnalogClockProps) {
   const { hour, minute } = angles(total)
 
   // Hands are drawn pointing straight up (angle 0); the surrounding <motion.g>
@@ -31,6 +32,12 @@ export function AnalogClock({ total, size = 280, show24 = true, step, onChange }
   const minuteTail = polar(14, 180)
   const hourEnd = polar(44, 0)
   const hourTail = polar(12, 180)
+
+  // Optional seconds hand: thin, reaches near the rim, ticks (no easing).
+  const hasSeconds = typeof seconds === 'number'
+  const secDeg = hasSeconds ? ((seconds as number) % 60) * 6 : 0
+  const secEnd = polar(78, secDeg)
+  const secTail = polar(18, secDeg + 180)
 
   const svgRef = useRef<SVGSVGElement | null>(null)
   const dragging = useRef<'hour' | 'minute' | null>(null)
@@ -272,6 +279,22 @@ export function AnalogClock({ total, size = 280, show24 = true, step, onChange }
           />
         )}
       </motion.g>
+
+      {/* optional seconds hand: a thin amber sweep that ticks each second.
+          Purely visual — drawn as a plain line (no easing), non-interactive,
+          and tucked under the center cap so the cap covers its pivot. */}
+      {hasSeconds && (
+        <line
+          x1={secTail.x}
+          y1={secTail.y}
+          x2={secEnd.x}
+          y2={secEnd.y}
+          stroke="#D97706"
+          strokeWidth={1.6}
+          strokeLinecap="round"
+          pointerEvents="none"
+        />
+      )}
 
       {/* center cap: orange disc, cream pupil, tiny white catch-light */}
       <circle cx={C} cy={C} r={9} fill="#F59E0B" />

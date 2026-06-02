@@ -43,6 +43,7 @@ export function SettingsView({ settings, progress, onSettings, onPlay, onReset }
           ['showWords', 'Mostrar horas por palavras'],
           ['voice', 'Botão de voz'],
           ['showHandLegend', 'Legenda dos ponteiros'],
+          ['showSeconds', 'Mostrar segundos'],
         ] as Array<[keyof Settings, string]>).map(([key, label]) => (
           <label key={key} className="flex items-center justify-between rounded-xl bg-white px-4 py-3 font-bold text-ink shadow-sm">
             {label}

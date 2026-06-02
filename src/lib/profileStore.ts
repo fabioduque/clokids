@@ -6,6 +6,7 @@ export interface Settings {
   voice: boolean
   dayNight: boolean // false = manhã, true = tarde/noite
   showHandLegend: boolean
+  showSeconds: boolean
 }
 
 export interface Progress {
@@ -27,6 +28,7 @@ export const DEFAULT_PROFILE: Profile = {
     voice: true,
     dayNight: false,
     showHandLegend: true,
+    showSeconds: false,
   },
   progress: {
     unlockedLevel: 1,
@@ -41,7 +43,12 @@ export function loadProfile(): Profile {
     const parsed = JSON.parse(raw) as Profile
     // shallow shape guard: fall back if required keys are missing
     if (!parsed?.settings || !parsed?.progress) return structuredClone(DEFAULT_PROFILE)
-    return structuredClone(parsed)
+    // Merge stored values over the defaults so older profiles that predate a
+    // newer setting (e.g. showSeconds) come back with the default, not undefined.
+    return {
+      settings: { ...DEFAULT_PROFILE.settings, ...parsed.settings },
+      progress: { ...DEFAULT_PROFILE.progress, ...parsed.progress },
+    }
   } catch {
     return structuredClone(DEFAULT_PROFILE)
   }
