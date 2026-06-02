@@ -1,9 +1,13 @@
 export function pickPortugueseVoice(
   voices: SpeechSynthesisVoice[],
 ): SpeechSynthesisVoice | null {
+  const isPtPT = (v: SpeechSynthesisVoice) => v.lang?.toLowerCase() === 'pt-pt'
+  const isPt = (v: SpeechSynthesisVoice) => !!v.lang?.toLowerCase().startsWith('pt')
   return (
-    voices.find((x) => x.lang?.toLowerCase() === 'pt-pt') ??
-    voices.find((x) => x.lang?.toLowerCase().startsWith('pt')) ??
+    voices.find((v) => isPtPT(v) && v.localService) ??
+    voices.find(isPtPT) ??
+    voices.find((v) => isPt(v) && v.localService) ??
+    voices.find(isPt) ??
     null
   )
 }
@@ -24,12 +28,17 @@ export function speak(text: string): void {
   if (!s) return
   const voice = pickPortugueseVoice(s.getVoices())
   if (!voice) return
-  s.cancel()
   const u = new SpeechSynthesisUtterance(text)
   u.voice = voice
-  u.lang = voice.lang
+  u.lang = 'pt-PT' // pin the locale so a dropped voice still falls back to Portuguese, never English
   u.rate = 0.9
-  s.speak(u)
+  if (s.speaking || s.pending) {
+    // Chrome can drop the assigned voice if cancel() and speak() run in the same tick.
+    s.cancel()
+    setTimeout(() => s.speak(u), 80)
+  } else {
+    s.speak(u)
+  }
 }
 
 // Voices may load asynchronously; call this so callers can re-check
