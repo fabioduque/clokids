@@ -3,7 +3,7 @@ import { DigitalClock } from '../components/DigitalClock'
 import { DayNightToggle } from '../components/DayNightToggle'
 import { HandLegend } from '../components/HandLegend'
 import { ListenButton } from '../components/ListenButton'
-import { isPM, split, toTotal, toWords, periodWord, hour12Of } from '../lib/timeModel'
+import { isPM, split, toTotal, toSpokenWords, hour12Of } from '../lib/timeModel'
 import type { Settings } from '../lib/profileStore'
 
 export interface FreePlayViewProps {
@@ -15,7 +15,7 @@ export interface FreePlayViewProps {
 export function FreePlayView({ total, onChange, settings }: FreePlayViewProps) {
   const { hour24, minute } = split(total)
   const pm = isPM(hour24)
-  const spoken = `${toWords(hour24, minute)} ${periodWord(hour24)}`
+  const spoken = toSpokenWords(hour24, minute)
 
   function setPm(nextPm: boolean) {
     onChange(toTotal(hour12Of(hour24), minute, nextPm))

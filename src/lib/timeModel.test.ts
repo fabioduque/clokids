@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mod1440, split, snap, angles, toWords, format24, format12, periodWord, toTotal, isPM, hour12Of } from './timeModel'
+import { mod1440, split, snap, angles, toWords, format24, format12, periodWord, toTotal, isPM, hour12Of, toSpokenWords } from './timeModel'
 
 describe('mod1440', () => {
   it('wraps negative and overflow into 0..1439', () => {
@@ -58,6 +58,24 @@ describe('toWords (pt-PT)', () => {
   for (const [h, m, expected] of cases) {
     it(`${h}:${String(m).padStart(2, '0')} -> "${expected}"`, () => {
       expect(toWords(h, m)).toBe(expected)
+    })
+  }
+})
+
+describe('toSpokenWords (simple spoken form)', () => {
+  const cases: Array<[number, number, string]> = [
+    [15, 45, 'três e quarenta e cinco da tarde'],
+    [3, 0, 'três horas da manhã'],
+    [1, 0, 'uma hora da manhã'],
+    [13, 30, 'uma e trinta da tarde'],
+    [20, 5, 'oito e cinco da noite'],
+    [0, 1, 'doze e um da manhã'],
+    [12, 15, 'doze e quinze da tarde'],
+    [9, 59, 'nove e cinquenta e nove da manhã'],
+  ]
+  for (const [h, m, expected] of cases) {
+    it(`${h}:${String(m).padStart(2, '0')} -> "${expected}"`, () => {
+      expect(toSpokenWords(h, m)).toBe(expected)
     })
   }
 })

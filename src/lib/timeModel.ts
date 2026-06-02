@@ -102,3 +102,21 @@ export function toTotal(h12: number, minute: number, pm: boolean): number {
   const hour24 = pm ? base + 12 : base
   return mod1440(hour24 * 60 + minute)
 }
+
+// Tens words, index = tens digit (used for minute cardinals 30..59).
+const TENS = ['', '', 'vinte', 'trinta', 'quarenta', 'cinquenta']
+
+function minuteCardinal(n: number): string {
+  if (n < 30) return UNITS_M[n]
+  const t = Math.floor(n / 10)
+  const u = n % 10
+  return u === 0 ? TENS[t] : `${TENS[t]} e ${UNITS_M[u]}`
+}
+
+export function toSpokenWords(hour24: number, minute: number): string {
+  const h = hour12Of(hour24)
+  const hWord = HOURS_F[h]
+  const period = periodWord(hour24)
+  if (minute === 0) return `${hWord} ${h === 1 ? 'hora' : 'horas'} ${period}`
+  return `${hWord} e ${minuteCardinal(minute)} ${period}`
+}
