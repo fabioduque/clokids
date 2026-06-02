@@ -1,4 +1,4 @@
-export type Screen = 'play' | 'quiz' | 'settings'
+export type Screen = 'learn' | 'play' | 'quiz' | 'settings'
 
 export interface NavBarProps {
   screen: Screen
@@ -7,6 +7,7 @@ export interface NavBarProps {
 }
 
 const MAIN_TABS: Array<[Exclude<Screen, 'settings'>, string, string]> = [
+  ['learn', '💡', 'Aprender'],
   ['play', '🕐', 'Brincar'],
   ['quiz', '❓', 'Quiz'],
 ]
@@ -16,9 +17,14 @@ export function NavBar({ screen, onNavigate, totalStars }: NavBarProps) {
     <>
       {/* Top bar: single row, never wraps. */}
       <header className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-ring px-3 py-3 text-white shadow-md sm:px-4">
-        <span className="shrink-0 text-lg font-extrabold tracking-tight">
+        <button
+          type="button"
+          onClick={() => onNavigate('play')}
+          aria-label="Ir para Brincar"
+          className="shrink-0 cursor-pointer text-lg font-extrabold tracking-tight"
+        >
           <span aria-hidden>🕐</span> Relógio
-        </span>
+        </button>
 
         <div className="flex shrink-0 items-center gap-2">
           {/* Brincar / Quiz pills — only on sm+ where there is room. */}
@@ -67,7 +73,7 @@ export function NavBar({ screen, onNavigate, totalStars }: NavBarProps) {
 
       {/* Bottom nav: mobile only, big thumb-friendly targets. */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-2 border-t-4 border-ink24/30 bg-white shadow-[0_-4px_16px_rgba(146,64,14,0.12)] sm:hidden"
+        className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-3 border-t-4 border-ink24/30 bg-white shadow-[0_-4px_16px_rgba(146,64,14,0.12)] sm:hidden"
         aria-label="Navegação principal"
       >
         {MAIN_TABS.map(([s, icon, label]) => {
@@ -79,19 +85,19 @@ export function NavBar({ screen, onNavigate, totalStars }: NavBarProps) {
               onClick={() => onNavigate(s)}
               aria-label={label}
               aria-current={active ? 'page' : undefined}
-              className={`flex flex-col items-center justify-center gap-0.5 py-2.5 font-extrabold transition-colors ${
+              className={`flex flex-col items-center justify-center gap-0.5 px-1 py-2.5 font-extrabold transition-colors ${
                 active ? 'text-ring' : 'text-ink/50'
               }`}
             >
               <span
-                className={`grid h-9 w-16 place-items-center rounded-full text-2xl leading-none transition-colors ${
+                className={`grid h-9 w-14 place-items-center rounded-full text-2xl leading-none transition-colors ${
                   active ? 'bg-ring/15' : 'bg-transparent'
                 }`}
                 aria-hidden
               >
                 {icon}
               </span>
-              <span className="text-base leading-none">{label}</span>
+              <span className="text-sm leading-none">{label}</span>
             </button>
           )
         })}
