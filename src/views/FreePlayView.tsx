@@ -12,9 +12,11 @@ export interface FreePlayViewProps {
   onChange: (total: number) => void
   settings: Settings
   onSnapChange: (snap: Settings['snap']) => void
+  seconds: number | null
+  onNow: () => void
 }
 
-export function FreePlayView({ total, onChange, settings, onSnapChange }: FreePlayViewProps) {
+export function FreePlayView({ total, onChange, settings, onSnapChange, seconds, onNow }: FreePlayViewProps) {
   const { hour24, minute } = split(total)
   const pm = isPM(hour24)
   const spoken = toSpokenWords(hour24, minute)
@@ -33,14 +35,24 @@ export function FreePlayView({ total, onChange, settings, onSnapChange }: FreePl
           fill a tall phone, caps on desktop, and shrinks only when the
           viewport is genuinely short. */}
       <div className="flex w-full min-h-0 flex-1 items-center justify-center">
-        <AnalogClock total={total} step={settings.snap} onChange={onChange} size={420} />
+        <AnalogClock total={total} step={settings.snap} onChange={onChange} size={420} seconds={seconds} />
       </div>
       {/* Compact control stack: takes its natural height so the clock above
           flexes to fill the rest. Kept tight so it still fits at 360×480. */}
       <div className="flex shrink-0 flex-col items-center gap-1.5 sm:gap-3">
         {settings.showHandLegend && <HandLegend />}
-        <DigitalClock total={total} showWords={settings.showWords} />
-        <DayNightToggle pm={pm} onChange={setPm} />
+        <DigitalClock total={total} showWords={settings.showWords} seconds={seconds} />
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <DayNightToggle pm={pm} onChange={setPm} />
+          <button
+            type="button"
+            onClick={onNow}
+            aria-label="Acertar o relógio pela hora atual"
+            className="flex items-center gap-1.5 rounded-full border-2 border-amber-300 bg-amber-50 px-4 py-1.5 text-base font-extrabold text-amber-700 shadow-md transition-transform active:scale-95 sm:py-2 sm:text-lg"
+          >
+            🕒 Agora
+          </button>
+        </div>
         <ListenButton text={spoken} enabled={settings.voice} />
       </div>
     </div>

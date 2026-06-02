@@ -7,14 +7,48 @@ import { SettingsView } from './views/SettingsView'
 import { DEFAULT_PROFILE, loadProfile, saveProfile, type Profile, type Settings } from './lib/profileStore'
 import { type Level } from './lib/quiz'
 
+function nowParts() {
+  const d = new Date()
+  return { total: d.getHours() * 60 + d.getMinutes(), seconds: d.getSeconds() }
+}
+
 export default function App() {
   const [profile, setProfile] = useState<Profile>(() => loadProfile())
   const [screen, setScreen] = useState<Screen>('play')
-  const [total, setTotal] = useState(945)
+  // Brincar opens at the real current time and keeps ticking ("live") until the
+  // user drags a hand / taps a number, which switches to a manually-set time.
+  const [manualTotal, setManualTotal] = useState<number>(() => nowParts().total)
+  const [live, setLive] = useState(true)
+  const [now, setNow] = useState(nowParts)
   const [quizLevel, setQuizLevel] = useState<Level>(1)
   const [roundId, setRoundId] = useState(0)
 
   useEffect(() => saveProfile(profile), [profile])
+
+  // While live, refresh the displayed time every second so the clock (and the
+  // sweeping seconds hand, when shown) stays current. Stops as soon as we leave
+  // live mode.
+  useEffect(() => {
+    if (!live) return
+    setNow(nowParts())
+    const id = setInterval(() => setNow(nowParts()), 1000)
+    return () => clearInterval(id)
+  }, [live])
+
+  const displayTotal = live ? now.total : manualTotal
+  const displaySeconds = live && profile.settings.showSeconds ? now.seconds : null
+
+  function onFreePlayChange(t: number) {
+    setLive(false)
+    setManualTotal(t)
+  }
+
+  function onNow() {
+    const p = nowParts()
+    setManualTotal(p.total)
+    setNow(p)
+    setLive(true)
+  }
 
   const totalStars =
     profile.progress.starsByLevel[1] +
@@ -68,8 +102,10 @@ export default function App() {
         {screen === 'learn' && <LearnView onGoToPlay={() => navigate('play')} />}
         {screen === 'play' && (
           <FreePlayView
-            total={total}
-            onChange={setTotal}
+            total={displayTotal}
+            seconds={displaySeconds}
+            onChange={onFreePlayChange}
+            onNow={onNow}
             settings={profile.settings}
             onSnapChange={(snap) => updateSettings({ ...profile.settings, snap })}
           />
