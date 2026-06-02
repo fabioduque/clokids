@@ -33,12 +33,12 @@ const HOURS_F = [
   'oito', 'nove', 'dez', 'onze', 'doze',
 ]
 
-function hour12(hour24: number): number {
+export function hour12Of(hour24: number): number {
   return ((hour24 + 11) % 12) + 1
 }
 
 export function toWords(hour24: number, minute: number): string {
-  const h = hour12(hour24)
+  const h = hour12Of(hour24)
   // base name of the *current* hour for the "e ..." side
   const baseName =
     hour24 === 0 ? 'meia-noite' : hour24 === 12 ? 'meio-dia' : HOURS_F[h]
@@ -66,9 +66,39 @@ export function toWords(hour24: number, minute: number): string {
     nextName = 'meio-dia'
     article = 'o'
   } else {
-    const hn = hour12(next24)
+    const hn = hour12Of(next24)
     nextName = HOURS_F[hn]
     article = hn === 1 ? 'a' : 'as'
   }
   return `${toWord} para ${article} ${nextName}`
+}
+
+function pad2(n: number): string {
+  return String(n).padStart(2, '0')
+}
+
+export function format24(total: number): string {
+  const { hour24, minute } = split(total)
+  return `${pad2(hour24)}:${pad2(minute)}`
+}
+
+export function periodWord(hour24: number): 'da manhã' | 'da tarde' | 'da noite' {
+  if (hour24 < 12) return 'da manhã'
+  if (hour24 < 20) return 'da tarde'
+  return 'da noite'
+}
+
+export function format12(total: number): string {
+  const { hour24, minute } = split(total)
+  return `${hour12Of(hour24)}:${pad2(minute)} ${periodWord(hour24)}`
+}
+
+export function isPM(hour24: number): boolean {
+  return hour24 >= 12
+}
+
+export function toTotal(h12: number, minute: number, pm: boolean): number {
+  const base = h12 % 12 // 12 -> 0
+  const hour24 = pm ? base + 12 : base
+  return mod1440(hour24 * 60 + minute)
 }
