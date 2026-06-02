@@ -1,13 +1,12 @@
 import { useState } from 'react'
-import { AnalogClock } from './components/AnalogClock'
-import { format24 } from './lib/timeModel'
+import { FreePlayView } from './views/FreePlayView'
+import { DEFAULT_PROFILE } from './lib/profileStore'
 
 export default function App() {
-  const [t, setT] = useState(945)
+  const [total, setTotal] = useState(945)
   return (
-    <div className="min-h-screen bg-bg flex flex-col items-center justify-center gap-4 font-rounded">
-      <AnalogClock total={t} step={5} onChange={setT} />
-      <p className="text-2xl font-extrabold text-ink">{format24(t)}</p>
+    <div className="min-h-screen bg-bg font-rounded">
+      <FreePlayView total={total} onChange={setTotal} settings={DEFAULT_PROFILE.settings} />
     </div>
   )
 }
