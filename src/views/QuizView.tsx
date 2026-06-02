@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { AnalogClock } from '../components/AnalogClock'
 import { makeQuestion, type Level, type Question } from '../lib/quiz'
-import { format24, format12, split, toWords, periodWord } from '../lib/timeModel'
+import { format24, format12 } from '../lib/timeModel'
+import { playSuccess, playError } from '../lib/sound'
 
 export interface QuizViewProps {
   level: Level
@@ -77,23 +78,23 @@ export function QuizView({ level, onFinish }: QuizViewProps) {
   function choose(option: number) {
     if (picked !== null) return
     setPicked(option)
-    if (option === q.correct) setScore((s) => s + 1)
+    if (option === q.correct) {
+      setScore((s) => s + 1)
+      playSuccess()
+    } else {
+      playError()
+    }
     setTimeout(() => {
       setPicked(null)
       setIdx((i) => i + 1)
     }, 1400)
   }
 
-  function digitalLabel(total: number) {
-    const { hour24, minute } = split(total)
-    return `${format24(total)} · ${toWords(hour24, minute)} ${periodWord(hour24)}`
-  }
-
   return (
-    <div className="flex flex-col items-center gap-6 py-6">
+    <div className="flex flex-col items-center gap-2 pb-2 pt-3 sm:gap-5 sm:py-6">
       <div className="flex gap-2">
         {Array.from({ length: ROUND }, (_, i) => (
-          <span key={i} className={`h-3 w-3 rounded-full ${i < idx ? 'bg-ring' : 'bg-ink/20'}`} />
+          <span key={i} className={`h-2 w-2 rounded-full sm:h-3 sm:w-3 ${i < idx ? 'bg-ring' : 'bg-ink/20'}`} />
         ))}
       </div>
 
@@ -101,7 +102,7 @@ export function QuizView({ level, onFinish }: QuizViewProps) {
       <AnimatePresence mode="wait">
         <motion.div
           key={idx}
-          className="flex w-full flex-col items-center gap-6"
+          className="flex w-full flex-col items-center gap-2 sm:gap-5"
           initial={reduce ? false : { opacity: 0, x: 16 }}
           animate={{ opacity: 1, x: 0 }}
           exit={reduce ? undefined : { opacity: 0, x: -16 }}
@@ -110,11 +111,13 @@ export function QuizView({ level, onFinish }: QuizViewProps) {
           {q.direction === 'analogToDigital' ? (
             <>
               <div className="relative">
-                <p className="text-xl font-bold text-ink">Que horas são?</p>
+                <p className="text-lg font-bold text-ink sm:text-xl">Que horas são?</p>
                 <CorrectStar show={gotItRight} reduce={!!reduce} />
               </div>
-              <AnalogClock total={q.correct} size={240} />
-              <div className="grid w-full max-w-md grid-cols-1 gap-3">
+              <div className="aspect-square" style={{ width: 'min(42vw, 24vh)' }}>
+                <AnalogClock total={q.correct} size={240} />
+              </div>
+              <div className="grid w-full max-w-md grid-cols-2 gap-2 sm:gap-3">
                 {q.options.map((opt) => (
                   <motion.button
                     key={opt}
@@ -122,7 +125,8 @@ export function QuizView({ level, onFinish }: QuizViewProps) {
                     className={feedbackClass(opt, picked, q.correct)}
                     animate={pop(opt, picked, q.correct, !!reduce)}
                   >
-                    {format24(opt)} <span className="text-ink24">({format12(opt)})</span>
+                    <span className="block text-xl leading-tight sm:text-2xl">{format24(opt)}</span>
+                    <span className="block text-xs font-bold text-ink24 sm:text-sm">{format12(opt)}</span>
                   </motion.button>
                 ))}
               </div>
@@ -130,20 +134,22 @@ export function QuizView({ level, onFinish }: QuizViewProps) {
           ) : (
             <>
               <div className="relative">
-                <p className="text-xl font-bold text-ink">Qual relógio mostra esta hora?</p>
+                <p className="text-lg font-bold text-ink sm:text-xl">Qual relógio mostra esta hora?</p>
                 <CorrectStar show={gotItRight} reduce={!!reduce} />
               </div>
-              <p className="text-4xl font-extrabold text-ink">{digitalLabel(q.correct)}</p>
-              <div className="grid w-full max-w-md grid-cols-2 gap-3">
+              <p className="text-4xl font-extrabold tabular-nums text-ink sm:text-6xl">{format24(q.correct)}</p>
+              <div className="grid w-full max-w-md grid-cols-2 gap-2 sm:gap-3">
                 {q.options.map((opt, i) => (
                   <motion.button
                     key={opt}
                     onClick={() => choose(opt)}
                     aria-label={`Opção ${i + 1}`}
-                    className={`flex items-center justify-center rounded-2xl p-2 ${feedbackClass(opt, picked, q.correct)}`}
+                    className={`flex items-center justify-center rounded-2xl p-1 sm:p-2 ${feedbackClass(opt, picked, q.correct)}`}
                     animate={pop(opt, picked, q.correct, !!reduce)}
                   >
-                    <AnalogClock total={opt} size={130} show24={false} />
+                    <div className="aspect-square" style={{ width: 'min(30vw, 17vh)' }}>
+                      <AnalogClock total={opt} size={130} show24={false} />
+                    </div>
                   </motion.button>
                 ))}
               </div>
@@ -186,7 +192,7 @@ function pop(opt: number, picked: number | null, correct: number, reduce: boolea
 }
 
 function feedbackClass(opt: number, picked: number | null, correct: number): string {
-  const base = 'rounded-2xl border-2 px-4 py-3 text-xl font-extrabold shadow-sm transition-colors'
+  const base = 'rounded-2xl border-2 px-3 py-2 text-center font-extrabold shadow-sm transition-colors sm:px-4 sm:py-3'
   if (picked === null) return `${base} border-ring/40 bg-white text-ink active:scale-95`
   if (opt === correct) return `${base} border-green-500 bg-green-100 text-green-800`
   if (opt === picked) return `${base} border-red-300 bg-red-50 text-red-400`
