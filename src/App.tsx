@@ -1,12 +1,9 @@
-import { useState } from 'react'
-import { FreePlayView } from './views/FreePlayView'
-import { DEFAULT_PROFILE } from './lib/profileStore'
+import { QuizView } from './views/QuizView'
 
 export default function App() {
-  const [total, setTotal] = useState(945)
   return (
     <div className="min-h-screen bg-bg font-rounded">
-      <FreePlayView total={total} onChange={setTotal} settings={DEFAULT_PROFILE.settings} />
+      <QuizView level={1} onFinish={(s) => alert(`Score: ${s}`)} />
     </div>
   )
 }
