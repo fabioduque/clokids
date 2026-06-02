@@ -1,9 +1,9 @@
-function App() {
+import { AnalogClock } from './components/AnalogClock'
+
+export default function App() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <h1 className="text-4xl font-bold text-blue-600">Relógio</h1>
+    <div className="min-h-screen bg-bg flex items-center justify-center font-rounded">
+      <AnalogClock total={945} />
     </div>
   )
 }
-
-export default App
