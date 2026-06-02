@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { NavBar, type Screen } from './components/NavBar'
 import { FreePlayView } from './views/FreePlayView'
+import { LearnView } from './views/LearnView'
 import { QuizView } from './views/QuizView'
 import { SettingsView } from './views/SettingsView'
 import { DEFAULT_PROFILE, loadProfile, saveProfile, type Profile, type Settings } from './lib/profileStore'
@@ -64,6 +65,7 @@ export default function App() {
           available height instead of leaving empty space. dvh keeps mobile
           browser chrome from cropping the layout. */}
       <main className="mx-auto flex h-[calc(100dvh-64px)] max-w-xl flex-col overflow-y-auto px-4 pb-[78px] sm:pb-4">
+        {screen === 'learn' && <LearnView onGoToPlay={() => navigate('play')} />}
         {screen === 'play' && (
           <FreePlayView
             total={total}
