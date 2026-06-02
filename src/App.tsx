@@ -59,7 +59,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-bg font-rounded text-ink">
       <NavBar screen={screen} onNavigate={navigate} totalStars={totalStars} />
-      <main className="mx-auto max-w-xl px-4">
+      <main className="mx-auto max-w-xl px-4 pb-24 sm:pb-6">
         {screen === 'play' && (
           <FreePlayView total={total} onChange={setTotal} settings={profile.settings} />
         )}
