@@ -61,7 +61,12 @@ export default function App() {
       <NavBar screen={screen} onNavigate={navigate} totalStars={totalStars} />
       <main className="mx-auto max-w-xl px-4 pb-24 sm:pb-6">
         {screen === 'play' && (
-          <FreePlayView total={total} onChange={setTotal} settings={profile.settings} />
+          <FreePlayView
+            total={total}
+            onChange={setTotal}
+            settings={profile.settings}
+            onSnapChange={(snap) => updateSettings({ ...profile.settings, snap })}
+          />
         )}
         {screen === 'quiz' && <QuizView key={roundId} level={quizLevel} onFinish={finishQuiz} />}
         {screen === 'settings' && (
