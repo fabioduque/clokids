@@ -120,3 +120,15 @@ export function toSpokenWords(hour24: number, minute: number): string {
   if (minute === 0) return `${hWord} ${h === 1 ? 'hora' : 'horas'} ${period}`
   return `${hWord} e ${minuteCardinal(minute)} ${period}`
 }
+
+// Given the current total minutes and a new snapped minute-of-hour (0..59)
+// chosen by dragging the minute hand, return the new total minutes, carrying
+// the hour across the 12 o'clock boundary based on rotation direction.
+export function minuteDragTotal(currentTotal: number, snappedMinute: number): number {
+  const cur = split(currentTotal)
+  const diff = snappedMinute - cur.minute
+  let hourDelta = 0
+  if (diff < -30) hourDelta = 1 // crossed 12 going forward (e.g. 59 -> 0)
+  else if (diff > 30) hourDelta = -1 // crossed 12 going backward (e.g. 0 -> 59)
+  return mod1440((cur.hour24 + hourDelta) * 60 + snappedMinute)
+}

@@ -1,6 +1,6 @@
 import { useRef, useId } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { angles, split, mod1440, snap } from '../lib/timeModel'
+import { angles, split, mod1440, minuteDragTotal } from '../lib/timeModel'
 import { pointerToDegrees } from './clockGeom'
 
 export interface AnalogClockProps {
@@ -72,10 +72,10 @@ export function AnalogClock({ total, size = 280, show24 = true, step, onChange }
   function applyAngle(deg: number) {
     const cur = split(total)
     if (dragging.current === 'minute') {
-      const m = Math.round(deg / 6) % 60
-      const snapped = snap(cur.hour24 * 60 + m, step!)
-      const newMinute = split(snapped).minute
-      onChange!(mod1440(cur.hour24 * 60 + newMinute))
+      const raw = Math.round(deg / 6)
+      let m = Math.round(raw / step!) * step!
+      m = ((m % 60) + 60) % 60
+      onChange!(minuteDragTotal(total, m))
     } else if (dragging.current === 'hour') {
       const h = Math.round(deg / 30) % 12
       onChange!(mod1440(h * 60 + cur.minute))

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mod1440, split, snap, angles, toWords, format24, format12, periodWord, toTotal, isPM, hour12Of, toSpokenWords } from './timeModel'
+import { mod1440, split, snap, angles, toWords, format24, format12, periodWord, toTotal, isPM, hour12Of, toSpokenWords, minuteDragTotal } from './timeModel'
 
 describe('mod1440', () => {
   it('wraps negative and overflow into 0..1439', () => {
@@ -97,6 +97,24 @@ describe('format12 + period', () => {
     expect(periodWord(9)).toBe('da manhã')
     expect(periodWord(15)).toBe('da tarde')
     expect(periodWord(22)).toBe('da noite')
+  })
+})
+
+describe('minuteDragTotal (hour carry across 12)', () => {
+  it('advances the hour when crossing 12 forward', () => {
+    expect(minuteDragTotal(59, 0)).toBe(60)      // 00:59 -> 01:00
+    expect(minuteDragTotal(119, 0)).toBe(120)    // 01:59 -> 02:00
+  })
+  it('decrements the hour when crossing 12 backward', () => {
+    expect(minuteDragTotal(60, 59)).toBe(59)     // 01:00 -> 00:59
+  })
+  it('wraps the day at the boundaries', () => {
+    expect(minuteDragTotal(1439, 0)).toBe(0)     // 23:59 -> 00:00
+    expect(minuteDragTotal(0, 59)).toBe(1439)    // 00:00 -> 23:59
+  })
+  it('does not change the hour for normal in-hour moves', () => {
+    expect(minuteDragTotal(180, 5)).toBe(185)    // 03:00 -> 03:05
+    expect(minuteDragTotal(195, 10)).toBe(190)   // 03:15 -> 03:10
   })
 })
 
