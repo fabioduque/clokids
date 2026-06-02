@@ -1,4 +1,5 @@
 import { useRef, useId } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import { angles, split, mod1440, snap } from '../lib/timeModel'
 import { pointerToDegrees } from './clockGeom'
 
@@ -22,15 +23,37 @@ function polar(r: number, deg: number): { x: number; y: number } {
 export function AnalogClock({ total, size = 280, show24 = true, step, onChange }: AnalogClockProps) {
   const { hour, minute } = angles(total)
 
-  // Hand tips (contract: hour shorter than minute) + small friendly tails behind pivot.
-  const minuteEnd = polar(64, minute)
-  const minuteTail = polar(14, minute + 180)
-  const hourEnd = polar(44, hour)
-  const hourTail = polar(12, hour + 180)
+  // Hands are drawn pointing straight up (angle 0); the surrounding <motion.g>
+  // rotates them to the real angle. This keeps the geometry contract identical
+  // (lengths/tails) while letting us ease discrete changes without spinning the
+  // long way across the 0/360 boundary.
+  const minuteEnd = polar(64, 0)
+  const minuteTail = polar(14, 180)
+  const hourEnd = polar(44, 0)
+  const hourTail = polar(12, 180)
 
   const svgRef = useRef<SVGSVGElement | null>(null)
   const dragging = useRef<'hour' | 'minute' | null>(null)
   const interactive = typeof step === 'number' && !!onChange
+
+  const reduce = useReducedMotion()
+
+  // Accumulate a CONTINUOUS rotation per hand so framer-motion always takes the
+  // short path (e.g. 358° -> 2° eases +4°, not -356°). We keep the previous
+  // *displayed* rotation and add the shortest signed delta toward the target.
+  const hourRot = useRef(hour)
+  const minuteRot = useRef(minute)
+  const shortStep = (prev: number, target: number) => {
+    const d = (target - (prev % 360) + 540) % 360 - 180 // shortest signed delta
+    return prev + d
+  }
+  hourRot.current = shortStep(hourRot.current, hour)
+  minuteRot.current = shortStep(minuteRot.current, minute)
+
+  // Instant while dragging (or reduced motion); gentle ease for discrete changes.
+  const handTransition = dragging.current || reduce
+    ? { duration: 0 }
+    : { type: 'spring' as const, stiffness: 170, damping: 20, mass: 0.6 }
 
   // Unique ids so multiple clocks on one page (quiz grid) don't collide.
   const uid = useId()
@@ -186,29 +209,23 @@ export function AnalogClock({ total, size = 280, show24 = true, step, onChange }
         )
       })}
 
-      {/* hands: hour = red & thick & short, minute = blue & thinner & long */}
-      <line
-        x1={hourTail.x}
-        y1={hourTail.y}
-        x2={hourEnd.x}
-        y2={hourEnd.y}
-        stroke="#EF4444"
-        strokeWidth={7}
-        strokeLinecap="round"
-      />
-      <line
-        x1={minuteTail.x}
-        y1={minuteTail.y}
-        x2={minuteEnd.x}
-        y2={minuteEnd.y}
-        stroke="#3B82F6"
-        strokeWidth={5}
-        strokeLinecap="round"
-      />
-
-      {/* wider transparent hit lines for comfortable touch dragging */}
-      {interactive && (
-        <>
+      {/* hour hand (red, thick, short) + its transparent hit-line, rotated together
+          about the center so the hit target always covers the visible hand. */}
+      <motion.g
+        style={{ transformOrigin: '100px 100px', transformBox: 'view-box' }}
+        animate={{ rotate: hourRot.current }}
+        transition={handTransition}
+      >
+        <line
+          x1={hourTail.x}
+          y1={hourTail.y}
+          x2={hourEnd.x}
+          y2={hourEnd.y}
+          stroke="#EF4444"
+          strokeWidth={7}
+          strokeLinecap="round"
+        />
+        {interactive && (
           <line
             x1={hourTail.x}
             y1={hourTail.y}
@@ -221,6 +238,25 @@ export function AnalogClock({ total, size = 280, show24 = true, step, onChange }
             onPointerDown={onPointerDown('hour')}
             aria-label="Ponteiro das horas"
           />
+        )}
+      </motion.g>
+
+      {/* minute hand (blue, thinner, long) + its transparent hit-line. */}
+      <motion.g
+        style={{ transformOrigin: '100px 100px', transformBox: 'view-box' }}
+        animate={{ rotate: minuteRot.current }}
+        transition={handTransition}
+      >
+        <line
+          x1={minuteTail.x}
+          y1={minuteTail.y}
+          x2={minuteEnd.x}
+          y2={minuteEnd.y}
+          stroke="#3B82F6"
+          strokeWidth={5}
+          strokeLinecap="round"
+        />
+        {interactive && (
           <line
             x1={minuteTail.x}
             y1={minuteTail.y}
@@ -233,8 +269,8 @@ export function AnalogClock({ total, size = 280, show24 = true, step, onChange }
             onPointerDown={onPointerDown('minute')}
             aria-label="Ponteiro dos minutos"
           />
-        </>
-      )}
+        )}
+      </motion.g>
 
       {/* center cap: orange disc, cream pupil, tiny white catch-light */}
       <circle cx={C} cy={C} r={9} fill="#F59E0B" />
