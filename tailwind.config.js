@@ -4,7 +4,6 @@ export default {
   theme: {
     extend: {
       colors: {
-        face: '#FFFDF7',
         ring: '#F59E0B',
         ink: '#92400E',
         ink24: '#FB923C',

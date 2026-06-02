@@ -135,10 +135,11 @@ export function QuizView({ level, onFinish }: QuizViewProps) {
               </div>
               <p className="text-4xl font-extrabold text-ink">{digitalLabel(q.correct)}</p>
               <div className="grid w-full max-w-md grid-cols-2 gap-3">
-                {q.options.map((opt) => (
+                {q.options.map((opt, i) => (
                   <motion.button
                     key={opt}
                     onClick={() => choose(opt)}
+                    aria-label={`Opção ${i + 1}`}
                     className={`flex items-center justify-center rounded-2xl p-2 ${feedbackClass(opt, picked, q.correct)}`}
                     animate={pop(opt, picked, q.correct, !!reduce)}
                   >
