@@ -91,18 +91,20 @@ export function QuizView({ level, onFinish }: QuizViewProps) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-2 pb-2 pt-3 sm:gap-5 sm:py-6">
-      <div className="flex gap-2">
+    <div className="flex h-full min-h-0 flex-col items-center gap-2 pb-2 pt-3 sm:gap-4 sm:py-4">
+      <div className="flex shrink-0 gap-2">
         {Array.from({ length: ROUND }, (_, i) => (
           <span key={i} className={`h-2 w-2 rounded-full sm:h-3 sm:w-3 ${i < idx ? 'bg-ring' : 'bg-ink/20'}`} />
         ))}
       </div>
 
-      {/* Subtle cross-fade between successive questions (keyed on idx). */}
+      {/* Subtle cross-fade between successive questions (keyed on idx). The
+          question fills the available height so the clock / option grid grow
+          to use the space and only shrink on a short viewport. */}
       <AnimatePresence mode="wait">
         <motion.div
           key={idx}
-          className="flex w-full flex-col items-center gap-2 sm:gap-5"
+          className="flex w-full min-h-0 flex-1 flex-col items-center gap-2 sm:gap-4"
           initial={reduce ? false : { opacity: 0, x: 16 }}
           animate={{ opacity: 1, x: 0 }}
           exit={reduce ? undefined : { opacity: 0, x: -16 }}
@@ -110,14 +112,15 @@ export function QuizView({ level, onFinish }: QuizViewProps) {
         >
           {q.direction === 'analogToDigital' ? (
             <>
-              <div className="relative">
+              <div className="relative shrink-0">
                 <p className="text-lg font-bold text-ink sm:text-xl">Que horas são?</p>
                 <CorrectStar show={gotItRight} reduce={!!reduce} />
               </div>
-              <div className="aspect-square" style={{ width: 'min(42vw, 24vh)' }}>
-                <AnalogClock total={q.correct} size={240} />
+              {/* Prompt clock fills the leftover height above the options. */}
+              <div className="flex w-full min-h-0 flex-1 items-center justify-center">
+                <AnalogClock total={q.correct} size={300} />
               </div>
-              <div className="grid w-full max-w-md grid-cols-2 gap-2 sm:gap-3">
+              <div className="grid w-full max-w-md shrink-0 grid-cols-2 gap-2 sm:gap-3">
                 {q.options.map((opt) => (
                   <motion.button
                     key={opt}
@@ -133,27 +136,31 @@ export function QuizView({ level, onFinish }: QuizViewProps) {
             </>
           ) : (
             <>
-              <div className="relative">
+              <div className="relative shrink-0">
                 <p className="text-lg font-bold text-ink sm:text-xl">Qual relógio mostra esta hora?</p>
                 <CorrectStar show={gotItRight} reduce={!!reduce} />
               </div>
-              <p className="text-4xl font-extrabold tabular-nums text-ink sm:text-6xl">{format24(q.correct)}</p>
-              <div className="grid w-full grid-cols-2 gap-2 sm:gap-3" style={{ maxWidth: 'min(92vw, 30rem, 46vh)' }}>
-                {q.options.map((opt, i) => (
-                  <motion.button
-                    key={opt}
-                    onClick={() => choose(opt)}
-                    aria-label={`Opção ${i + 1}`}
-                    className={`flex aspect-square items-center justify-center overflow-hidden rounded-2xl border-2 p-2 shadow-sm transition-colors sm:p-3 ${optionFrameClass(opt, picked, q.correct)}`}
-                    animate={pop(opt, picked, q.correct, !!reduce)}
-                  >
-                    {/* Square box that fills the card's padding-box so all four
-                        clocks are the same size and centered with equal margins. */}
-                    <div className="flex aspect-square h-full w-full items-center justify-center">
-                      <AnalogClock total={opt} size={320} show24={false} />
-                    </div>
-                  </motion.button>
-                ))}
+              <p className="shrink-0 text-4xl font-extrabold tabular-nums text-ink sm:text-6xl">{format24(q.correct)}</p>
+              {/* The 2×2 grid of square option clocks fills the leftover area,
+                  centered, capped so it never gets gigantic on desktop. */}
+              <div className="flex w-full min-h-0 flex-1 items-center justify-center">
+                <div className="grid aspect-square h-full max-w-full grid-cols-2 grid-rows-2 gap-2 sm:gap-3" style={{ maxHeight: 'min(30rem, 100%)', maxWidth: 'min(30rem, 100%)' }}>
+                  {q.options.map((opt, i) => (
+                    <motion.button
+                      key={opt}
+                      onClick={() => choose(opt)}
+                      aria-label={`Opção ${i + 1}`}
+                      className={`flex aspect-square min-h-0 items-center justify-center overflow-hidden rounded-2xl border-2 p-2 shadow-sm transition-colors sm:p-3 ${optionFrameClass(opt, picked, q.correct)}`}
+                      animate={pop(opt, picked, q.correct, !!reduce)}
+                    >
+                      {/* Square box that fills the card's padding-box so all four
+                          clocks are the same size and centered with equal margins. */}
+                      <div className="flex aspect-square h-full w-full items-center justify-center">
+                        <AnalogClock total={opt} size={320} show24={false} />
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
               </div>
             </>
           )}

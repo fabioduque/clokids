@@ -59,7 +59,11 @@ export default function App() {
   return (
     <div className="min-h-screen bg-bg font-rounded text-ink">
       <NavBar screen={screen} onNavigate={navigate} totalStars={totalStars} />
-      <main className="mx-auto max-w-xl px-4 pb-24 sm:pb-6">
+      {/* The view fills the viewport between the sticky 64px top bar and the
+          fixed 78px bottom nav (mobile only), so screens can flex to fill the
+          available height instead of leaving empty space. dvh keeps mobile
+          browser chrome from cropping the layout. */}
+      <main className="mx-auto flex h-[calc(100dvh-64px)] max-w-xl flex-col overflow-y-auto px-4 pb-[78px] sm:pb-4">
         {screen === 'play' && (
           <FreePlayView
             total={total}
