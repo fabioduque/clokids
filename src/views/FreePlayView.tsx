@@ -22,8 +22,10 @@ export function FreePlayView({ total, onChange, settings }: FreePlayViewProps) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-6 py-6">
-      <AnalogClock total={total} step={settings.snap} onChange={onChange} />
+    <div className="flex flex-col items-center gap-2 py-2 sm:gap-6 sm:py-6">
+      <div className="aspect-square" style={{ width: 'min(52vw, 26vh)' }}>
+        <AnalogClock total={total} step={settings.snap} onChange={onChange} size={280} />
+      </div>
       {settings.showHandLegend && <HandLegend />}
       <DigitalClock total={total} showWords={settings.showWords} />
       <DayNightToggle pm={pm} onChange={setPm} />

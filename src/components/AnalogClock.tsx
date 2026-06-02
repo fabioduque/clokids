@@ -108,11 +108,12 @@ export function AnalogClock({ total, size = 280, show24 = true, step, onChange }
     <svg
       ref={svgRef}
       viewBox={`0 0 ${VB} ${VB}`}
-      width={size}
-      height={size}
+      width="100%"
+      height="100%"
+      style={{ maxWidth: size, maxHeight: size }}
       role="img"
       aria-label="Relógio analógico"
-      className="select-none touch-none"
+      className="block h-full w-full select-none touch-none"
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
     >

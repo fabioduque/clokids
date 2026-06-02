@@ -19,7 +19,7 @@ export function ListenButton({ text, enabled = true }: ListenButtonProps) {
       type="button"
       onClick={() => speak(text)}
       aria-label={`Ouvir: ${text}`}
-      className="rounded-full bg-ring px-5 py-3 text-lg font-extrabold text-white shadow-md active:scale-95 transition-transform"
+      className="rounded-full bg-ring px-5 py-2 text-base font-extrabold text-white shadow-md active:scale-95 transition-transform sm:py-3 sm:text-lg"
     >
       🔊 Ouvir
     </button>
