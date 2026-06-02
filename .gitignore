@@ -1,3 +1,7 @@
-.superpowers/
 node_modules/
 dist/
+.DS_Store
+
+# internal planning / scratch — keep out of the repo
+.superpowers/
+docs/superpowers/
