@@ -3,7 +3,7 @@ import { NavBar, type Screen } from './components/NavBar'
 import { FreePlayView } from './views/FreePlayView'
 import { QuizView } from './views/QuizView'
 import { SettingsView } from './views/SettingsView'
-import { loadProfile, saveProfile, type Profile, type Settings } from './lib/profileStore'
+import { DEFAULT_PROFILE, loadProfile, saveProfile, type Profile, type Settings } from './lib/profileStore'
 import { type Level } from './lib/quiz'
 
 export default function App() {
@@ -22,6 +22,10 @@ export default function App() {
 
   function updateSettings(settings: Settings) {
     setProfile((p) => ({ ...p, settings }))
+  }
+
+  function resetProfile() {
+    setProfile(structuredClone(DEFAULT_PROFILE))
   }
 
   function navigate(next: Screen) {
@@ -66,6 +70,7 @@ export default function App() {
             progress={profile.progress}
             onSettings={updateSettings}
             onPlay={startQuiz}
+            onReset={resetProfile}
           />
         )}
       </main>

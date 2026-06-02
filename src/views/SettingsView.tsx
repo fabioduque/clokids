@@ -7,6 +7,7 @@ export interface SettingsViewProps {
   progress: Progress
   onSettings: (s: Settings) => void
   onPlay: (level: Level) => void
+  onReset: () => void
 }
 
 const SNAPS: Array<Settings['snap']> = [15, 5, 1]
@@ -16,7 +17,7 @@ const SNAP_LABEL: Record<Settings['snap'], string> = {
   1: 'Minuto a minuto',
 }
 
-export function SettingsView({ settings, progress, onSettings, onPlay }: SettingsViewProps) {
+export function SettingsView({ settings, progress, onSettings, onPlay, onReset }: SettingsViewProps) {
   function set<K extends keyof Settings>(key: K, value: Settings[K]) {
     onSettings({ ...settings, [key]: value })
   }
@@ -55,6 +56,19 @@ export function SettingsView({ settings, progress, onSettings, onPlay }: Setting
       <section className="flex flex-col gap-3">
         <h3 className="text-xl font-extrabold text-ink">Níveis</h3>
         <LevelMap progress={progress} onPlay={onPlay} />
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h3 className="text-xl font-extrabold text-ink">Recomeçar</h3>
+        <button
+          type="button"
+          onClick={() => {
+            if (window.confirm('Apagar todas as estrelas e recomeçar do início?')) onReset()
+          }}
+          className="rounded-xl border-2 border-red-300 bg-white px-4 py-3 font-bold text-red-500 shadow-sm active:scale-95"
+        >
+          🗑️ Apagar estrelas e recomeçar
+        </button>
       </section>
     </div>
   )
