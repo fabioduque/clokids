@@ -11,6 +11,7 @@ export interface AnalogClockProps {
   step?: number // snap step (minutes) for the minute hand; if omitted -> not interactive
   onChange?: (total: number) => void
   seconds?: number | null // 0–59; when a number, draw a thin seconds hand (ticks)
+  highlightRange?: { from: number; to: number } | null // hour positions 1..12; draws a translucent red wedge spanning that hour range
 }
 
 const VB = 200
@@ -21,7 +22,7 @@ function polar(r: number, deg: number): { x: number; y: number } {
   return { x: C + r * Math.sin(a), y: C - r * Math.cos(a) }
 }
 
-export function AnalogClock({ total, size = 280, show24 = true, step, onChange, seconds }: AnalogClockProps) {
+export function AnalogClock({ total, size = 280, show24 = true, step, onChange, seconds, highlightRange }: AnalogClockProps) {
   const { hour, minute } = angles(total)
 
   // Hands are drawn pointing straight up (angle 0); the surrounding <motion.g>
@@ -143,6 +144,25 @@ export function AnalogClock({ total, size = 280, show24 = true, step, onChange, 
       </g>
       {/* subtle inner highlight ring for a polished, layered look */}
       <circle cx={C} cy={C} r={88} fill="none" stroke="#FDE9C8" strokeWidth={1.5} />
+
+      {/* optional translucent red wedge spanning an hour range (Aprender wizard).
+          Drawn EARLY so ticks, numbers and hands render on top and stay readable.
+          R sits just inside the orange ring; sweep-flag 1 draws the short clockwise
+          arc so the slice covers the from→to wedge, not the rest of the dial. */}
+      {highlightRange &&
+        (() => {
+          const R = 84
+          const a = polar(R, highlightRange.from * 30)
+          const b = polar(R, highlightRange.to * 30)
+          return (
+            <path
+              d={`M ${C} ${C} L ${a.x} ${a.y} A ${R} ${R} 0 0 1 ${b.x} ${b.y} Z`}
+              fill="#EF4444"
+              opacity={0.16}
+              pointerEvents="none"
+            />
+          )
+        })()}
 
       {/* minute ticks */}
       {Array.from({ length: 60 }, (_, m) => {

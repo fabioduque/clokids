@@ -14,6 +14,7 @@ const STEPS = [
   { total: t(3, 0), show24: false, title: 'O relógio', text: 'Tem números de 1 a 12 à volta.', spoken: 'O relógio tem os números de um a doze.' },
   { total: t(3, 10), show24: false, title: 'Dois ponteiros', text: 'Vermelho = horas. Azul = minutos.', spoken: 'Há dois ponteiros. O vermelho mostra as horas. O azul mostra os minutos.' },
   { total: t(3, 0), show24: false, title: 'A hora', text: 'O ponteiro pequeno aponta a hora. Aqui: 3 horas.', spoken: 'O ponteiro pequeno aponta para a hora. Aqui são três horas.' },
+  { total: t(1, 40), show24: false, title: 'Entre as horas', text: 'Entre o 1 e o 2 é sempre 1 hora — mesmo perto do 2!', spoken: 'Quando o ponteiro pequeno está entre o um e o dois, ainda é uma hora. Mesmo que esteja perto do dois.', highlightRange: { from: 1, to: 2 } },
   { total: t(3, 10), show24: false, title: 'Os minutos', text: 'Cada número vale 5 minutos. Conta de 5 em 5.', spoken: 'O ponteiro grande conta os minutos. Cada número vale cinco minutos.' },
   { total: t(3, 30), show24: false, title: 'E meia', text: 'Ponteiro grande no 6: três e meia (3:30).', spoken: 'No seis é e meia. Três e meia.' },
   { total: t(3, 15), show24: false, title: 'E um quarto', text: 'Ponteiro grande no 3: três e um quarto (3:15).', spoken: 'No três é e um quarto. Três e um quarto.' },
@@ -70,7 +71,12 @@ export function LearnView({ onGoToPlay }: LearnViewProps) {
           {/* MIDDLE: the clock owns the leftover vertical space so it stays LARGE.
               It animates (eases) between steps as `total` changes. */}
           <div className="flex w-full min-h-0 flex-1 items-center justify-center">
-            <AnalogClock total={STEPS[step].total} show24={STEPS[step].show24} size={380} />
+            <AnalogClock
+              total={STEPS[step].total}
+              show24={STEPS[step].show24}
+              size={380}
+              highlightRange={'highlightRange' in STEPS[step] ? STEPS[step].highlightRange : null}
+            />
           </div>
 
           {/* Title + ONE short line + listen button. Cross-fades per step. */}
