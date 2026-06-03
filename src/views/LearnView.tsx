@@ -68,54 +68,58 @@ export function LearnView({ onGoToPlay }: LearnViewProps) {
         <FinalScreen onGoToPlay={onGoToPlay} reduce={!!reduce} />
       ) : (
         <>
-          {/* MIDDLE: the clock owns the leftover vertical space so it stays LARGE
-              below lg. It animates (eases) between steps as `total` changes. On
-              lg it takes a fixed comfortable size so the clock + text + nav read
-              as one centred compact group. */}
-          <div className="flex w-full min-h-0 flex-1 items-center justify-center lg:h-[340px] lg:flex-none">
-            <AnalogClock
-              total={STEPS[step].total}
-              show24={STEPS[step].show24}
-              size={380}
-              highlightRange={'highlightRange' in STEPS[step] ? STEPS[step].highlightRange : null}
-            />
-          </div>
+          {/* Below lg: clock fills the leftover height, text + nav stacked below.
+              On lg: two columns — the LARGE clock on the left, and the step
+              title/text/Ouvir plus the ◀▶ nav grouped in a panel on the right —
+              so the lesson uses the full width. */}
+          <div className="flex w-full min-h-0 flex-1 flex-col items-center gap-2 sm:gap-3 lg:flex-row lg:items-center lg:justify-center lg:gap-12 lg:flex-none">
+            <div className="flex w-full min-h-0 flex-1 items-center justify-center lg:h-[min(50vh,28rem)] lg:w-[min(50vh,28rem)] lg:flex-none">
+              <AnalogClock
+                total={STEPS[step].total}
+                show24={STEPS[step].show24}
+                size={460}
+                highlightRange={'highlightRange' in STEPS[step] ? STEPS[step].highlightRange : null}
+              />
+            </div>
 
-          {/* Title + ONE short line + listen button. Cross-fades per step. */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={step}
-              className="flex shrink-0 flex-col items-center gap-2 text-center"
-              initial={reduce ? false : { opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={reduce ? undefined : { opacity: 0, y: -8 }}
-              transition={{ duration: 0.22, ease: 'easeOut' }}
-            >
-              <h2 className="text-2xl font-extrabold text-ink sm:text-3xl">{STEPS[step].title}</h2>
-              <p className="max-w-xs text-base font-bold text-ink/70 sm:text-lg">{STEPS[step].text}</p>
-              <ListenButton text={STEPS[step].spoken} />
-            </motion.div>
-          </AnimatePresence>
+            <div className="flex w-full shrink-0 flex-col items-center gap-2 sm:gap-3 lg:w-[22rem] lg:items-stretch lg:gap-6 lg:rounded-3xl lg:border-2 lg:border-amber-200/70 lg:bg-white/70 lg:p-8 lg:shadow-lg">
+              {/* Title + ONE short line + listen button. Cross-fades per step. */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={step}
+                  className="flex shrink-0 flex-col items-center gap-2 text-center lg:items-start lg:text-left"
+                  initial={reduce ? false : { opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduce ? undefined : { opacity: 0, y: -8 }}
+                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                >
+                  <h2 className="text-2xl font-extrabold text-ink sm:text-3xl lg:text-4xl">{STEPS[step].title}</h2>
+                  <p className="max-w-xs text-base font-bold text-ink/70 sm:text-lg lg:max-w-none lg:text-xl">{STEPS[step].text}</p>
+                  <ListenButton text={STEPS[step].spoken} />
+                </motion.div>
+              </AnimatePresence>
 
-          {/* BOTTOM: navigation */}
-          <div className="flex w-full max-w-md shrink-0 items-center justify-between gap-3">
-            <button
-              type="button"
-              onClick={back}
-              disabled={step === 0}
-              aria-label="Voltar"
-              className="rounded-full bg-white px-5 py-3 text-lg font-extrabold text-ink shadow-md transition-transform active:scale-95 disabled:invisible"
-            >
-              ◀ Voltar
-            </button>
-            <button
-              type="button"
-              onClick={next}
-              aria-label="Seguinte"
-              className="rounded-full bg-ring px-6 py-3 text-lg font-extrabold text-white shadow-md transition-transform active:scale-95"
-            >
-              Seguinte ▶
-            </button>
+              {/* BOTTOM: navigation */}
+              <div className="flex w-full max-w-md shrink-0 items-center justify-between gap-3 lg:max-w-none lg:border-t lg:border-amber-200/70 lg:pt-6">
+                <button
+                  type="button"
+                  onClick={back}
+                  disabled={step === 0}
+                  aria-label="Voltar"
+                  className="rounded-full bg-white px-5 py-3 text-lg font-extrabold text-ink shadow-md transition-transform active:scale-95 disabled:invisible"
+                >
+                  ◀ Voltar
+                </button>
+                <button
+                  type="button"
+                  onClick={next}
+                  aria-label="Seguinte"
+                  className="rounded-full bg-ring px-6 py-3 text-lg font-extrabold text-white shadow-md transition-transform active:scale-95"
+                >
+                  Seguinte ▶
+                </button>
+              </div>
+            </div>
           </div>
         </>
       )}

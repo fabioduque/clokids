@@ -140,7 +140,7 @@ export default function App() {
           fixed 78px bottom nav (mobile only), so screens can flex to fill the
           available height instead of leaving empty space. dvh keeps mobile
           browser chrome from cropping the layout. */}
-      <main className="mx-auto flex h-[calc(100dvh-64px)] max-w-xl flex-col overflow-y-auto px-4 pb-[78px] sm:pb-4">
+      <main className="mx-auto flex h-[calc(100dvh-64px)] max-w-xl flex-col overflow-y-auto px-4 pb-[78px] sm:pb-4 lg:max-w-6xl lg:px-8">
         {screen === 'learn' && <LearnView onGoToPlay={() => navigate('play')} />}
         {screen === 'play' && (
           <FreePlayView

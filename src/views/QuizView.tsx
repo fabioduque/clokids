@@ -165,38 +165,46 @@ export function QuizView({ level, onStar, onComplete, onRepeat, onNext, onExit, 
         >
           {q.direction === 'analogToDigital' ? (
             <>
-              <p className="shrink-0 text-lg font-bold text-ink sm:text-xl">Que horas são?</p>
-              {/* Prompt clock fills the leftover height above the options below
-                  lg; on lg it takes a fixed comfortable size so the prompt +
-                  options read as one centred compact group. */}
-              <div className="flex w-full min-h-0 flex-1 items-center justify-center lg:h-[300px] lg:flex-none">
-                <AnalogClock total={q.correct} size={300} show24={q.is24h} />
-              </div>
-              <div className="grid w-full max-w-md shrink-0 grid-cols-2 gap-2 sm:gap-3">
-                {q.options.map((opt) => (
-                  <motion.button
-                    key={opt}
-                    onClick={() => choose(opt)}
-                    className={feedbackClass(opt, picked, q.correct)}
-                    animate={pop(opt, picked, q.correct, !!reduce)}
-                  >
-                    <span className="block text-xl leading-tight sm:text-2xl">{digitalText(opt, q.is24h)}</span>
-                    {q.is24h && (
-                      <span className="block text-xs font-bold text-ink24 sm:text-sm">{format12(opt)}</span>
-                    )}
-                  </motion.button>
-                ))}
+              {/* Below lg: question / clock / options stacked and filling height.
+                  On lg: two columns — the prompt clock on the left, the question
+                  + 4 answer options on the right — so it uses the full width. */}
+              <p className="shrink-0 text-lg font-bold text-ink sm:text-xl lg:hidden">Que horas são?</p>
+              <div className="flex w-full min-h-0 flex-1 flex-col items-center gap-2 sm:gap-4 lg:flex-row lg:items-center lg:justify-center lg:gap-12 lg:flex-none">
+                {/* Prompt clock: fills leftover height below lg; a large fixed
+                    left column on lg. */}
+                <div className="flex w-full min-h-0 flex-1 items-center justify-center lg:h-[min(50vh,28rem)] lg:w-[min(50vh,28rem)] lg:flex-none">
+                  <AnalogClock total={q.correct} size={460} show24={q.is24h} />
+                </div>
+                <div className="flex w-full max-w-md shrink-0 flex-col gap-2 sm:gap-3 lg:max-w-sm">
+                  <p className="hidden shrink-0 text-center text-2xl font-bold text-ink lg:block">Que horas são?</p>
+                  <div className="grid w-full grid-cols-2 gap-2 sm:gap-3">
+                    {q.options.map((opt) => (
+                      <motion.button
+                        key={opt}
+                        onClick={() => choose(opt)}
+                        className={feedbackClass(opt, picked, q.correct)}
+                        animate={pop(opt, picked, q.correct, !!reduce)}
+                      >
+                        <span className="block text-xl leading-tight sm:text-2xl">{digitalText(opt, q.is24h)}</span>
+                        {q.is24h && (
+                          <span className="block text-xs font-bold text-ink24 sm:text-sm">{format12(opt)}</span>
+                        )}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </>
           ) : (
             <>
               <p className="shrink-0 text-lg font-bold text-ink sm:text-xl">Qual relógio mostra esta hora?</p>
-              <p className="shrink-0 text-4xl font-extrabold tabular-nums text-ink sm:text-6xl">{digitalText(q.correct, q.is24h)}</p>
+              <p className="shrink-0 text-4xl font-extrabold tabular-nums text-ink sm:text-6xl lg:text-7xl">{digitalText(q.correct, q.is24h)}</p>
               {/* The 2×2 grid of square option clocks fills the leftover area,
                   centered, capped so it never gets gigantic on desktop. On lg it
-                  takes a fixed size so the prompt + grid form one compact group. */}
-              <div className="flex w-full min-h-0 flex-1 items-center justify-center lg:h-[360px] lg:flex-none">
-                <div className="grid aspect-square h-full max-w-full grid-cols-2 grid-rows-2 gap-2 sm:gap-3" style={{ maxHeight: 'min(30rem, 100%)', maxWidth: 'min(30rem, 100%)' }}>
+                  takes a larger fixed size so it uses the width while the prompt
+                  + grid still read as one centred group. */}
+              <div className="flex w-full min-h-0 flex-1 items-center justify-center lg:h-[min(56vh,34rem)] lg:flex-none">
+                <div className="grid aspect-square h-full max-w-full grid-cols-2 grid-rows-2 gap-2 sm:gap-3 lg:gap-5" style={{ maxHeight: 'min(34rem, 100%)', maxWidth: 'min(34rem, 100%)' }}>
                   {q.options.map((opt, i) => (
                     <motion.button
                       key={opt}
