@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { AnalogClock } from '../components/AnalogClock'
 import { ListenButton } from '../components/ListenButton'
+import { speak } from '../lib/speak'
 
 export interface LearnViewProps {
   onGoToPlay: () => void
@@ -29,6 +30,19 @@ export function LearnView({ onGoToPlay }: LearnViewProps) {
 
   const back = () => setStep((s) => Math.max(0, s - 1))
   const next = () => setStep((s) => Math.min(last, s + 1))
+
+  // Auto-play the step's spoken phrase when the user advances or goes back.
+  // Skip the initial mount (step 1: the child presses Ouvir) and the final
+  // celebration screen (no spoken phrase). speak() cancels any ongoing
+  // utterance and no-ops when no Portuguese voice exists, so this is safe.
+  const firstRender = useRef(true)
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false
+      return
+    }
+    if (step < STEPS.length) speak(STEPS[step].spoken)
+  }, [step])
 
   return (
     <div className="flex h-full min-h-0 flex-col items-center gap-2 py-2 sm:gap-3 sm:py-4">
