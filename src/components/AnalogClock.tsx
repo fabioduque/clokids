@@ -145,18 +145,22 @@ export function AnalogClock({ total, size = 280, show24 = true, step, onChange, 
       {/* subtle inner highlight ring for a polished, layered look */}
       <circle cx={C} cy={C} r={88} fill="none" stroke="#FDE9C8" strokeWidth={1.5} />
 
-      {/* optional translucent red wedge spanning an hour range (Aprender wizard).
-          Drawn EARLY so ticks, numbers and hands render on top and stay readable.
-          R sits just inside the orange ring; sweep-flag 1 draws the short clockwise
-          arc so the slice covers the from→to wedge, not the rest of the dial. */}
+      {/* optional translucent red wedge spanning a from→to range (Aprender
+          wizard, Missões interval). Positions are clock positions 1..12 and may
+          be fractional (minute-hand positions = minute/5). Drawn EARLY so ticks,
+          numbers and hands render on top and stay readable. R sits just inside
+          the orange ring; sweep-flag 1 goes clockwise and the large-arc flag
+          kicks in past 180° so long waits (e.g. 40 min) fill the right slice. */}
       {highlightRange &&
         (() => {
           const R = 84
           const a = polar(R, highlightRange.from * 30)
           const b = polar(R, highlightRange.to * 30)
+          const sweep = (((highlightRange.to - highlightRange.from) * 30) % 360 + 360) % 360
+          const largeArc = sweep > 180 ? 1 : 0
           return (
             <path
-              d={`M ${C} ${C} L ${a.x} ${a.y} A ${R} ${R} 0 0 1 ${b.x} ${b.y} Z`}
+              d={`M ${C} ${C} L ${a.x} ${a.y} A ${R} ${R} 0 ${largeArc} 1 ${b.x} ${b.y} Z`}
               fill="#EF4444"
               opacity={0.16}
               pointerEvents="none"

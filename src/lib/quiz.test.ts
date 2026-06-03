@@ -7,8 +7,10 @@ import {
   randomTime,
   generateDistractors,
   makeQuestion,
+  questionSkyTotal,
   LEVEL_COUNT,
   type Level,
+  type Question,
 } from './quiz'
 
 // Deterministic rng: returns the queued values, then 0.
@@ -168,5 +170,25 @@ describe('every level has at least 4 distinct appearances', () => {
       const keys = new Set(validTimes(level).map((t) => t % 720))
       expect(keys.size).toBeGreaterThanOrEqual(4)
     }
+  })
+})
+
+describe('questionSkyTotal', () => {
+  const q = (correct: number, is24h: boolean) =>
+    ({ direction: 'analogToDigital', correct, options: [correct], is24h }) as Question
+
+  it('uses the exact time for 24h questions (22:00 stays night)', () => {
+    expect(questionSkyTotal(q(22 * 60, true))).toBe(22 * 60)
+    expect(questionSkyTotal(q(3 * 60, true))).toBe(3 * 60)
+  })
+
+  it('maps small 12h hours to the afternoon (2:00 → 14:00)', () => {
+    expect(questionSkyTotal(q(2 * 60, false))).toBe(14 * 60)
+    expect(questionSkyTotal(q(0, false))).toBe(12 * 60)
+  })
+
+  it('keeps daytime 12h hours as-is (9:00 stays morning)', () => {
+    expect(questionSkyTotal(q(9 * 60, false))).toBe(9 * 60)
+    expect(questionSkyTotal(q(11 * 60 + 30, false))).toBe(11 * 60 + 30)
   })
 })

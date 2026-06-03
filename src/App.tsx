@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { NavBar, type Screen } from './components/NavBar'
+import { SkyBackground } from './components/SkyBackground'
 import { FreePlayView } from './views/FreePlayView'
 import { LearnView } from './views/LearnView'
 import { QuizView } from './views/QuizView'
 import { LevelMap } from './views/LevelMap'
+import { MissionsLocked, MissionsView } from './views/MissionsView'
 import { SettingsView } from './views/SettingsView'
 import { DEFAULT_PROFILE, loadProfile, saveProfile, type Profile, type Settings } from './lib/profileStore'
+import { playMinutes, shouldSuggestBreak } from './lib/playTimer'
+import { MISSIONS_UNLOCK_COST } from './lib/missions'
+import { LangContext, STR } from './lib/i18n'
+import { loadQuizRound } from './lib/roundStore'
 import { type Level } from './lib/quiz'
 
 function nowParts() {
@@ -25,11 +31,43 @@ export default function App() {
   // null = show the level map (pick a level); a Level = a round is in progress.
   const [quizLevel, setQuizLevel] = useState<Level | null>(null)
   const [roundId, setRoundId] = useState(0)
-  // Each entry is one in-flight star flying from screen-center to the top-bar
-  // counter. Keyed by an incrementing id so rapid stars animate independently
-  // and each removes itself when its flight ends.
-  const [flyingStars, setFlyingStars] = useState<Array<{ id: number; tx: number; ty: number }>>([])
   const reduce = useReducedMotion()
+
+  // Gentle screen-time nudge: the session starts on every page load (refresh =
+  // fresh start, by design). startTime is mirrored to localStorage so parents
+  // can inspect it; the ticking clock below recomputes elapsed minutes.
+  const [sessionStart] = useState(() => {
+    const t = Date.now()
+    try {
+      localStorage.setItem('relogio.sessionStart', String(t))
+    } catch {
+      /* storage unavailable — the nudge still works from memory */
+    }
+    return t
+  })
+  const [nowMs, setNowMs] = useState(() => Date.now())
+  const [breakDismissedAt, setBreakDismissedAt] = useState<number | null>(null)
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 30_000)
+    return () => clearInterval(id)
+  }, [])
+  const playedMin = playMinutes(sessionStart, nowMs)
+  const suggestBreak = shouldSuggestBreak(playedMin, breakDismissedAt)
+
+  // Touch-first app: a tap/click must never leave a lingering focus ring on a
+  // button (some browsers keep keyboard modality and show :focus-visible after
+  // pointer input). Keyboard (Tab) focus is untouched — the amber ring stays
+  // for real keyboard users.
+  useEffect(() => {
+    const drop = () => {
+      const el = document.activeElement
+      if (el instanceof HTMLElement && el.tagName === 'BUTTON') {
+        setTimeout(() => el.blur(), 0) // after the click handler has run
+      }
+    }
+    window.addEventListener('pointerup', drop)
+    return () => window.removeEventListener('pointerup', drop)
+  }, [])
 
   useEffect(() => saveProfile(profile), [profile])
 
@@ -45,6 +83,11 @@ export default function App() {
 
   const displayTotal = live ? now.total : manualTotal
   const displaySeconds = live && profile.settings.showSeconds ? now.seconds : null
+  // The sky portrays the clock the child is looking at: on Brincar it follows
+  // the (draggable) displayed time; on Quiz/Missões the active question sets it
+  // (skyOverride); elsewhere it sits at the real current time as ambient.
+  const [skyOverride, setSkyOverride] = useState<number | null>(null)
+  const ambientTotal = screen === 'play' ? displayTotal : (skyOverride ?? now.total)
 
   function onFreePlayChange(t: number) {
     setLive(false)
@@ -66,10 +109,31 @@ export default function App() {
     setProfile(structuredClone(DEFAULT_PROFILE))
   }
 
+  // One-time unlock of Missões do Tempo: spends stars (never below zero) and
+  // never needs paying again — an achievement, not a pay-per-play loop.
+  function unlockMissions() {
+    setProfile((p) => {
+      if (p.progress.missionsUnlocked || p.progress.totalStars < MISSIONS_UNLOCK_COST) return p
+      return {
+        ...p,
+        progress: {
+          ...p.progress,
+          totalStars: p.progress.totalStars - MISSIONS_UNLOCK_COST,
+          missionsUnlocked: true,
+        },
+      }
+    })
+  }
+
   function navigate(next: Screen) {
-    // Entering the Quiz tab always lands on the level map, never auto-starting
-    // a round.
-    if (next === 'quiz') setQuizLevel(null)
+    if (next === 'quiz') {
+      // Resume an unfinished stored round (the kid may have hopped to Brincar
+      // mid-round to think); otherwise land on the level map.
+      const stored = loadQuizRound()
+      setQuizLevel(stored ? stored.level : null)
+    }
+    // Leaving a question screen returns the sky to the ambient time.
+    setSkyOverride(null)
     setScreen(next)
   }
 
@@ -98,18 +162,13 @@ export default function App() {
   }
 
   // Award one star the instant an answer is correct: bump the cumulative count
-  // (persisted immediately so a star is never lost) and, unless reduced-motion,
-  // spawn a star that flies from screen-center into the top-bar counter.
+  // (persisted immediately so a star is never lost). The top-bar star itself
+  // pulses — it's keyed on the count inside NavBar.
   function awardStar() {
     setProfile((p) => ({
       ...p,
       progress: { ...p.progress, totalStars: p.progress.totalStars + 1 },
     }))
-    if (reduce) return
-    const target = document.getElementById('topbar-star')?.getBoundingClientRect()
-    const tx = target ? target.left + target.width / 2 : window.innerWidth - 24
-    const ty = target ? target.top + target.height / 2 : 24
-    setFlyingStars((list) => [...list, { id: Date.now() + Math.random(), tx, ty }])
   }
 
   function recordResult(score: number) {
@@ -133,14 +192,32 @@ export default function App() {
     })
   }
 
+  // App renders the LangContext.Provider itself, so it reads strings directly
+  // from the table (useContext here would see the default, not our value).
+  const ui = STR[profile.settings.lang]
+
   return (
-    <div className="min-h-screen bg-bg font-rounded text-ink">
-      <NavBar screen={screen} onNavigate={navigate} totalStars={profile.progress.totalStars} />
-      {/* The view fills the viewport between the sticky 64px top bar and the
-          fixed 78px bottom nav (mobile only), so screens can flex to fill the
-          available height instead of leaving empty space. dvh keeps mobile
-          browser chrome from cropping the layout. */}
-      <main className="mx-auto flex h-[calc(100dvh-64px)] max-w-xl flex-col overflow-y-auto px-4 pb-[78px] sm:pb-4 lg:max-w-6xl lg:px-8">
+    // Exactly one viewport tall (h-dvh): the header takes its natural height and
+    // `main` flexes to the REST — no hardcoded header height, so the page itself
+    // never grows a scrollbar.
+    <LangContext.Provider value={profile.settings.lang}>
+    <div className="relative flex h-dvh flex-col font-rounded text-ink">
+      <SkyBackground total={ambientTotal} />
+      <NavBar
+        screen={screen}
+        onNavigate={navigate}
+        totalStars={profile.progress.totalStars}
+        playMinutes={playedMin}
+      />
+      {/* The scroll container under the top bar (pb clears the fixed 78px
+          bottom nav, mobile only). Its CONTENT is a plain block: each view root
+          is `min-h-full`, so when content fits it fills the viewport and
+          centres, and when content is taller the view simply grows and `main`
+          scrolls from the top. (Centering an over-tall child with flex would
+          push its top above the scroll origin — the original clipping bug.)
+          min-h-0 lets main actually shrink inside the flex column; max-w is
+          kept snug on desktop so the composition reads as a group on the sky. */}
+      <main className="mx-auto w-full min-h-0 max-w-xl flex-1 overflow-y-auto px-4 pb-[78px] sm:pb-4 lg:max-w-5xl lg:px-8">
         {screen === 'learn' && <LearnView onGoToPlay={() => navigate('play')} />}
         {screen === 'play' && (
           <FreePlayView
@@ -165,7 +242,14 @@ export default function App() {
               onNext={nextLevel}
               onExit={exitToLevels}
               nextAvailable={quizLevel < 10 && (quizLevel + 1) <= profile.progress.unlockedLevel}
+              onSkyTime={setSkyOverride}
             />
+          ))}
+        {screen === 'missions' &&
+          (profile.progress.missionsUnlocked ? (
+            <MissionsView onStar={awardStar} onSkyTime={setSkyOverride} />
+          ) : (
+            <MissionsLocked totalStars={profile.progress.totalStars} onUnlock={unlockMissions} />
           ))}
         {screen === 'settings' && (
           <SettingsView
@@ -176,34 +260,45 @@ export default function App() {
         )}
       </main>
 
-      {/* Flying-star overlay: fixed above everything and non-interactive. Each
-          star is born large at the viewport center, then sails up to the
-          top-bar counter while shrinking and fading, popping the count on
-          arrival. Skipped entirely under prefers-reduced-motion. */}
-      <div className="pointer-events-none fixed inset-0 z-50">
-        <AnimatePresence>
-          {flyingStars.map((s) => (
-            <motion.span
-              key={s.id}
-              className="absolute left-1/2 top-1/2 -ml-6 -mt-6 text-5xl drop-shadow"
-              aria-hidden
-              initial={{ x: 0, y: 0, scale: 1.4, opacity: 0 }}
-              animate={{
-                x: s.tx - window.innerWidth / 2,
-                y: s.ty - window.innerHeight / 2,
-                scale: 0.3,
-                opacity: [0, 1, 1, 0],
-              }}
-              transition={{ duration: 0.7, ease: 'easeInOut', opacity: { times: [0, 0.15, 0.8, 1] } }}
-              onAnimationComplete={() =>
-                setFlyingStars((list) => list.filter((f) => f.id !== s.id))
-              }
+      {/* Gentle break suggestion after 30 min of play: NON-blocking — one
+          friendly card the child can dismiss (it returns 15 min later). The
+          point is awareness, never a lock-out. */}
+      <AnimatePresence>
+        {suggestBreak && (
+          <motion.div
+            className="fixed inset-0 z-40 grid place-items-center bg-ink/30 p-4 backdrop-blur-sm"
+            role="dialog"
+            aria-label={ui.breakAria}
+            initial={reduce ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={reduce ? undefined : { opacity: 0 }}
+          >
+            <motion.div
+              className="panel flex max-w-sm flex-col items-center gap-3 p-6 text-center"
+              initial={reduce ? false : { scale: 0.9, y: 10 }}
+              animate={{ scale: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 20 }}
             >
-              ⭐
-            </motion.span>
-          ))}
-        </AnimatePresence>
-      </div>
+              <span className="text-5xl" aria-hidden>
+                🌳
+              </span>
+              <h2 className="font-display text-2xl font-extrabold text-ink">
+                {ui.breakTitle(playedMin)}
+              </h2>
+              <p className="font-bold text-ink/70">{ui.breakText}</p>
+              <button
+                type="button"
+                onClick={() => setBreakDismissedAt(playedMin)}
+                className="btn-sun mt-1"
+              >
+                {ui.breakOk}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
+    </LangContext.Provider>
   )
 }

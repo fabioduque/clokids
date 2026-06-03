@@ -106,3 +106,14 @@ export function makeQuestion(level: Level, rng: Rng): Question {
   const options = shuffle([correct, ...generateDistractors(level, correct, rng)], rng)
   return { direction, correct, options, is24h: levelIs24h(level) }
 }
+
+/**
+ * The time-of-day the living sky should portray for a question. 24h questions
+ * use the real time — seeing "22:00" under a starry sky IS the lesson. 12h
+ * questions are ambiguous (2:00 could be deep night), so small hours map to the
+ * afternoon: kids picture "2:00" as nap-time, not 2 AM.
+ */
+export function questionSkyTotal(q: Question): number {
+  if (q.is24h) return q.correct
+  return q.correct < 7 * 60 ? q.correct + 720 : q.correct
+}

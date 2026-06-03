@@ -8,9 +8,9 @@ describe('profileStore', () => {
     expect(loadProfile()).toEqual(DEFAULT_PROFILE)
   })
 
-  it('default profile has 10 levels, totalStars 0, and show24h true', () => {
+  it('default profile has 10 levels, totalStars 0, and show24h false', () => {
     expect(DEFAULT_PROFILE.progress.totalStars).toBe(0)
-    expect(DEFAULT_PROFILE.settings.show24h).toBe(true)
+    expect(DEFAULT_PROFILE.settings.show24h).toBe(false)
     expect(Object.keys(DEFAULT_PROFILE.progress.starsByLevel)).toHaveLength(10)
     for (let l = 1; l <= 10; l++) {
       expect(DEFAULT_PROFILE.progress.starsByLevel[l as keyof typeof DEFAULT_PROFILE.progress.starsByLevel]).toBe(0)
@@ -49,7 +49,7 @@ describe('profileStore', () => {
     )
     const loaded = loadProfile()
     expect(loaded.settings.showSeconds).toBe(false)
-    expect(loaded.settings.show24h).toBe(true)
+    expect(loaded.settings.show24h).toBe(false)
     expect(loaded.settings.snap).toBe(5)
     expect(loaded.settings.showWords).toBe(false)
     expect(loaded.settings.dayNight).toBe(true)
@@ -68,7 +68,8 @@ describe('profileStore', () => {
     )
     const loaded = loadProfile()
     expect(loaded.progress.totalStars).toBe(0)
-    expect(loaded.settings.show24h).toBe(true)
+    expect(loaded.progress.missionsUnlocked).toBe(false)
+    expect(loaded.settings.show24h).toBe(false)
     expect(loaded.progress.unlockedLevel).toBe(2)
     expect(loaded.progress.starsByLevel[1]).toBe(5)
     expect(loaded.progress.starsByLevel[2]).toBe(3)

@@ -1,5 +1,77 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  /* Only the page canvas (html) carries the cream fallback. body and #root must
+     stay transparent, otherwise their opaque background would paint OVER the
+     fixed -z-10 SkyBackground and hide it everywhere. */
+  html {
+    background-color: theme('colors.bg');
+  }
+
+  /* Stars breathe softly. Disabled under reduced-motion. */
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: 0.35;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+    }
+  }
+
+  /* Focus: kill the browser's blue ring. Pointer taps/clicks show nothing;
+     keyboard users get a friendly amber ring in the app's own palette (it
+     follows each element's border-radius, so keep interactive things rounded). */
+  :where(button, a, [role='button'], input, label, [tabindex]):focus {
+    outline: none;
+  }
+  :where(button, a, [role='button'], input, label, [tabindex]):focus-visible {
+    outline: 3px solid theme('colors.ring');
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Frosted warm panel — the app's universal surface for text + controls so
+     copy is always legible whether the sky behind is bright noon or dark night.
+     Used at ALL breakpoints (mobile-first), not just desktop. */
+  .panel {
+    @apply rounded-[1.75rem] border border-cardline/80 bg-card/85 shadow-panel backdrop-blur-md;
+  }
+
+  /* Primary action — a chunky sun-gold pill with a tactile "hard" drop that
+     compresses on press (the toy-like squish kids respond to). */
+  .btn-sun {
+    @apply rounded-full bg-gradient-to-b from-sun to-ring px-6 py-3 font-display text-lg font-extrabold text-white shadow-sun transition-transform duration-100 will-change-transform active:translate-y-1 active:shadow-none;
+  }
+
+  /* Secondary action — soft cream pill on a hairline ledge. */
+  .btn-soft {
+    @apply rounded-full border border-cardline bg-card px-5 py-2.5 font-display text-base font-extrabold text-ink shadow-soft transition-transform duration-100 active:translate-y-1 active:shadow-none;
+  }
+
+  /* Compact action pills that orbit the clock's lower arc — small enough to
+     hug the rim without crowding the hands. */
+  .orbit-btn {
+    @apply inline-flex items-center gap-1 whitespace-nowrap rounded-full px-3 py-1.5 font-display text-sm font-extrabold shadow-md transition-transform duration-100 active:translate-y-0.5 active:shadow-sm sm:px-3.5 sm:py-2 sm:text-base;
+  }
+  .orbit-sun {
+    @apply bg-gradient-to-b from-sun to-ring text-white;
+  }
+  .orbit-soft {
+    @apply border border-cardline bg-card text-ink;
+  }
+}

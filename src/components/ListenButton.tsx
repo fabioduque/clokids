@@ -1,27 +1,32 @@
 import { useEffect, useState } from 'react'
 import { isVoiceAvailable, onVoicesReady, speak } from '../lib/speak'
+import { useLang, useT } from '../lib/i18n'
 
 export interface ListenButtonProps {
   text: string
   enabled?: boolean
+  /** Override the button styling (e.g. a compact orbit pill). */
+  className?: string
 }
 
-export function ListenButton({ text, enabled = true }: ListenButtonProps) {
+export function ListenButton({ text, enabled = true, className }: ListenButtonProps) {
+  const lang = useLang()
+  const ui = useT()
   const [available, setAvailable] = useState(false)
   useEffect(() => {
-    const check = () => setAvailable(isVoiceAvailable())
+    const check = () => setAvailable(isVoiceAvailable(lang))
     check()
     return onVoicesReady(check) // onVoicesReady returns a cleanup fn
-  }, [])
+  }, [lang])
   if (!enabled || !available) return null
   return (
     <button
       type="button"
-      onClick={() => speak(text)}
-      aria-label={`Ouvir: ${text}`}
-      className="rounded-full bg-ring px-5 py-2 text-base font-extrabold text-white shadow-md active:scale-95 transition-transform sm:py-3 sm:text-lg"
+      onClick={() => speak(text, lang)}
+      aria-label={ui.listenAria(text)}
+      className={className ?? 'btn-sun inline-flex items-center gap-2'}
     >
-      🔊 Ouvir
+      {ui.listen}
     </button>
   )
 }

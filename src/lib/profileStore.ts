@@ -1,4 +1,5 @@
 import type { Level } from './quiz'
+import type { Lang } from './i18n'
 
 export interface Settings {
   snap: 15 | 5 | 1
@@ -8,12 +9,14 @@ export interface Settings {
   showHandLegend: boolean
   showSeconds: boolean
   show24h: boolean
+  lang: Lang // UI + voice language; Portuguese by default
 }
 
 export interface Progress {
   unlockedLevel: Level
   totalStars: number // cumulative stars earned (used by the top-bar; incremented per correct answer by the UI)
   starsByLevel: Record<Level, number> // best score per level (0..5)
+  missionsUnlocked: boolean // one-time unlock of "Missões do Tempo" (costs stars)
 }
 
 export interface Profile {
@@ -31,12 +34,14 @@ export const DEFAULT_PROFILE: Profile = {
     dayNight: false,
     showHandLegend: true,
     showSeconds: false,
-    show24h: true,
+    show24h: false,
+    lang: 'pt',
   },
   progress: {
     unlockedLevel: 1,
     totalStars: 0,
     starsByLevel: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0 },
+    missionsUnlocked: false,
   },
 }
 

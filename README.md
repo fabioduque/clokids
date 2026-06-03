@@ -1,8 +1,8 @@
-# Learn to Read Clocks — Kids App
+# Clokids
 
-A small, friendly web app that helps children (ages 4–10) learn to **read an analog clock and tell the time**. The interface is in **European Portuguese** (the app teaches Portuguese time‑telling), and it runs entirely in the browser — no backend, no accounts.
+A small, friendly web app that helps children (ages 4–10) learn to **read an analog clock and tell the time**. Available in **European Portuguese** (default) and **English**, it runs entirely in the browser — no backend, no accounts, no ads.
 
-🔗 Live: `https://fabioduque.github.io/learn-to-read-clocks-kids-app/` (after the first deploy)
+🔗 Live: `https://fabioduque.github.io/clokids/`
 
 ## Features
 
