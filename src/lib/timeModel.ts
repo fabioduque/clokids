@@ -113,12 +113,12 @@ function minuteCardinal(n: number): string {
   return u === 0 ? TENS[t] : `${TENS[t]} e ${UNITS_M[u]}`
 }
 
-export function toSpokenWords(hour24: number, minute: number): string {
+export function toSpokenWords(hour24: number, minute: number, withPeriod = true): string {
   const h = hour12Of(hour24)
   const hWord = HOURS_F[h]
-  const period = periodWord(hour24)
-  if (minute === 0) return `${hWord} ${h === 1 ? 'hora' : 'horas'} ${period}`
-  return `${hWord} e ${minuteCardinal(minute)} ${period}`
+  const suffix = withPeriod ? ` ${periodWord(hour24)}` : ''
+  if (minute === 0) return `${hWord} ${h === 1 ? 'hora' : 'horas'}${suffix}`
+  return `${hWord} e ${minuteCardinal(minute)}${suffix}`
 }
 
 // Given the current total minutes and a new snapped minute-of-hour (0..59)

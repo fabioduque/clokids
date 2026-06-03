@@ -19,7 +19,7 @@ export interface FreePlayViewProps {
 export function FreePlayView({ total, onChange, settings, onSnapChange, seconds, onNow }: FreePlayViewProps) {
   const { hour24, minute } = split(total)
   const pm = isPM(hour24)
-  const spoken = toSpokenWords(hour24, minute)
+  const spoken = toSpokenWords(hour24, minute, settings.show24h)
 
   function setPm(nextPm: boolean) {
     onChange(toTotal(hour12Of(hour24), minute, nextPm))
@@ -45,9 +45,9 @@ export function FreePlayView({ total, onChange, settings, onSnapChange, seconds,
           flexes to fill the rest. Kept tight so it still fits at 360×480. */}
       <div className="flex shrink-0 flex-col items-center gap-1.5 sm:gap-3">
         {settings.showHandLegend && <HandLegend />}
-        <DigitalClock total={total} showWords={settings.showWords} seconds={seconds} />
+        <DigitalClock total={total} showWords={settings.showWords} seconds={seconds} show24h={settings.show24h} />
         <div className="flex flex-wrap items-center justify-center gap-2">
-          <DayNightToggle pm={pm} onChange={setPm} />
+          {settings.show24h && <DayNightToggle pm={pm} onChange={setPm} />}
           <button
             type="button"
             onClick={onNow}

@@ -80,6 +80,26 @@ describe('toSpokenWords (simple spoken form)', () => {
   }
 })
 
+describe('toSpokenWords without period (12h-only)', () => {
+  const cases: Array<[number, number, string]> = [
+    [3, 0, 'três horas'],                       // o'clock
+    [1, 0, 'uma hora'],                          // o'clock, singular
+    [12, 0, 'doze horas'],                       // noon -> doze horas
+    [15, 45, 'três e quarenta e cinco'],         // "e ..." form, big minute
+    [3, 15, 'três e quinze'],                    // "e ..." form, quarter
+    [13, 30, 'uma e trinta'],                    // "e ..." form
+    [20, 5, 'oito e cinco'],                     // "e ..." form
+    [9, 59, 'nove e cinquenta e nove'],          // "e ..." form, large
+  ]
+  for (const [h, m, expected] of cases) {
+    it(`${h}:${String(m).padStart(2, '0')} -> "${expected}" (no period)`, () => {
+      const got = toSpokenWords(h, m, false)
+      expect(got).toBe(expected)
+      expect(got).not.toMatch(/da (manhã|tarde|noite)/)
+    })
+  }
+})
+
 describe('format24', () => {
   it('zero-pads hours and minutes', () => {
     expect(format24(945)).toBe('15:45')
