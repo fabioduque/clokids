@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { AnalogClock } from '../components/AnalogClock'
 import { makeQuestion, questionSkyTotal, type Level, type Question } from '../lib/quiz'
@@ -56,10 +56,20 @@ export function QuizView({ level, onStar, onComplete, onRepeat, onNext, onExit, 
   const [init] = useState(() => {
     const stored = loadQuizRound()
     if (stored && stored.level === level) return stored
-    const fresh = { level, questions: buildRound(level), idx: 0, score: 0, startedAt: Date.now() }
+    const fresh = { level, questions: buildRound(level), idx: 0, score: 0, startedAt: Date.now(), elapsedMs: 0 }
     saveQuizRound(fresh)
     return fresh
   })
+  // ACTIVE time only: the stopwatch runs while the child is HERE. It resumes
+  // from the stored value on mount, so hopping to Brincar (or closing the tab)
+  // doesn't count — no more "185m 18s" rounds.
+  const elapsedRef = useRef(init.elapsedMs)
+  const resumeRef = useRef(Date.now())
+  function bumpElapsed() {
+    const now = Date.now()
+    elapsedRef.current += now - resumeRef.current
+    resumeRef.current = now
+  }
   const round = init.questions
   const [idx, setIdx] = useState(init.idx)
   const [score, setScore] = useState(init.score)
@@ -75,17 +85,19 @@ export function QuizView({ level, onStar, onComplete, onRepeat, onNext, onExit, 
   // Persist progress after every advance; the finished round is cleared inside
   // the completion effect below.
   useEffect(() => {
-    if (!done) saveQuizRound({ level, questions: round, idx, score, startedAt: init.startedAt })
+    if (!done) saveQuizRound({ level, questions: round, idx, score, startedAt: init.startedAt, elapsedMs: elapsedRef.current })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idx, score, done])
 
   // Staged help: appears after a long think, never costs stars.
   const [helpReady, setHelpReady] = useState(false)
   const [helpStage, setHelpStage] = useState(0) // 0 hidden · 1 text hint · 2 also eliminated 2 options
+  const [hintHidden, setHintHidden] = useState(false)
   const [eliminated, setEliminated] = useState<number[]>([])
   useEffect(() => {
     setHelpReady(false)
     setHelpStage(0)
+    setHintHidden(false)
     setEliminated([])
     if (done) return
     const id = setTimeout(() => setHelpReady(true), HELP_DELAY_MS)
@@ -93,6 +105,11 @@ export function QuizView({ level, onStar, onComplete, onRepeat, onNext, onExit, 
   }, [idx, done])
 
   function giveHelp() {
+    // A dismissed bubble comes back first; only then does help escalate.
+    if (hintHidden) {
+      setHintHidden(false)
+      return
+    }
     if (helpStage === 0) setHelpStage(1)
     else if (helpStage === 1) {
       setHelpStage(2)
@@ -115,7 +132,7 @@ export function QuizView({ level, onStar, onComplete, onRepeat, onNext, onExit, 
   // capture how long the phase took and retire the stored round.
   useEffect(() => {
     if (done) {
-      setFinishedInMs(Date.now() - init.startedAt)
+      setFinishedInMs(elapsedRef.current)
       clearQuizRound()
       onComplete(score)
     }
@@ -211,6 +228,7 @@ export function QuizView({ level, onStar, onComplete, onRepeat, onNext, onExit, 
       playError()
     }
     setTimeout(() => {
+      bumpElapsed()
       setPicked(null)
       setIdx((i) => i + 1)
     }, 1400)
@@ -222,7 +240,7 @@ export function QuizView({ level, onStar, onComplete, onRepeat, onNext, onExit, 
           stored round so the level map opens fresh). */}
       <RoundHud
         counter={ui.questionCounter(idx + 1, ROUND)}
-        helpVisible={helpReady && picked === null && helpStage < 2}
+        helpVisible={helpReady && picked === null && (helpStage < 2 || hintHidden)}
         onHelp={giveHelp}
         onAbandon={() => setConfirmExit(true)}
         abandonAria={ui.abandonQuizAria}
@@ -266,7 +284,7 @@ export function QuizView({ level, onStar, onComplete, onRepeat, onNext, onExit, 
                     pushed off a small phone screen. Larger fixed square on lg. */}
                 <div className="relative flex aspect-square w-[min(86vw,42vh,24rem)] shrink-0 items-center justify-center lg:w-[min(50vh,28rem)]">
                   <AnalogClock total={q.correct} size={460} show24={q.is24h} />
-                  <HintBubble text={hintText(q, ui)} visible={helpStage >= 1 && picked === null} />
+                  <HintBubble text={hintText(q, ui)} visible={helpStage >= 1 && picked === null && !hintHidden} onDismiss={() => setHintHidden(true)} onMore={helpStage === 1 ? giveHelp : undefined} />
                 </div>
                 <div className="flex w-full max-w-md shrink-0 flex-col gap-2 sm:gap-3 lg:max-w-sm">
                   <p className="hidden shrink-0 rounded-full bg-card/85 px-5 py-2 text-center font-display text-2xl font-bold text-ink shadow-soft backdrop-blur-md lg:block">{ui.whatTime}</p>
@@ -297,9 +315,11 @@ export function QuizView({ level, onStar, onComplete, onRepeat, onNext, onExit, 
                   centered, capped so it never gets gigantic on desktop. On lg it
                   takes a larger fixed size so it uses the width while the prompt
                   + grid still read as one centred group. */}
-              <div className="relative flex w-full min-h-0 flex-1 items-center justify-center lg:h-[min(46vh,30rem)] lg:flex-none">
-                <HintBubble text={hintText(q, ui)} visible={helpStage >= 1 && picked === null} edge="top" />
-                <div className="grid aspect-square h-full max-w-full grid-cols-2 grid-rows-2 gap-2 sm:gap-3 lg:gap-5" style={{ maxHeight: 'min(34rem, 100%)', maxWidth: 'min(34rem, 100%)' }}>
+              {/* The 2x2 grid sizes itself with min(vw, vh) — NEVER flex-1: a
+                  width-filled square would push the bottom row under the nav. */}
+              <div className="relative flex aspect-square w-[min(86vw,48vh,24rem)] shrink-0 items-center justify-center lg:w-[min(46vh,30rem)]">
+                <HintBubble text={hintText(q, ui)} visible={helpStage >= 1 && picked === null && !hintHidden} edge="top" onDismiss={() => setHintHidden(true)} onMore={helpStage === 1 ? giveHelp : undefined} />
+                <div className="grid h-full w-full grid-cols-2 grid-rows-2 gap-2 sm:gap-3 lg:gap-5">
                   {q.options.map((opt, i) => (
                     <motion.button
                       key={opt}

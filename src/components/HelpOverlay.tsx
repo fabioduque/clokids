@@ -45,16 +45,37 @@ export interface HintBubbleProps {
   text: string
   visible: boolean
   edge?: 'bottom' | 'top'
+  /** Tap-to-dismiss — the bubble overlays the dial, so the child must be able
+   * to clear it to read the clock again (the HUD ? brings it back). */
+  onDismiss: () => void
+  /** When there's a deeper hint available (the 50:50 that fades two wrong
+   * options), offer it right on the bubble — millionaire style. */
+  onMore?: () => void
 }
 
-export function HintBubble({ text, visible, edge = 'bottom' }: HintBubbleProps) {
+export function HintBubble({ text, visible, edge = 'bottom', onDismiss, onMore }: HintBubbleProps) {
+  const ui = useT()
   if (!visible) return null
   const anchor = edge === 'bottom' ? 'bottom-0' : 'top-0'
   return (
-    <div className={`pointer-events-none absolute ${anchor} inset-x-0 z-10 flex justify-center`}>
-      <p className="max-w-full text-balance rounded-2xl bg-card/95 px-3 py-1.5 text-center text-xs font-bold text-ink/80 shadow-soft backdrop-blur-md sm:text-sm">
-        💡 {text}
-      </p>
+    <div className={`pointer-events-none absolute ${anchor} inset-x-0 z-10 flex flex-col items-center gap-1`}>
+      <button
+        type="button"
+        onClick={onDismiss}
+        aria-label={ui.hintDismissAria}
+        className="pointer-events-auto max-w-full text-balance rounded-2xl bg-card/95 px-3 py-1.5 text-center text-xs font-bold text-ink/80 shadow-soft backdrop-blur-md transition-transform duration-100 active:translate-y-0.5 sm:text-sm"
+      >
+        💡 {text} <span aria-hidden className="ml-1 inline-block rounded-full bg-ink/10 px-1.5 text-ink/60">✕</span>
+      </button>
+      {onMore && (
+        <button
+          type="button"
+          onClick={onMore}
+          className="orbit-btn orbit-soft pointer-events-auto px-3 py-1 text-xs"
+        >
+          {ui.nextHint}
+        </button>
+      )}
     </div>
   )
 }

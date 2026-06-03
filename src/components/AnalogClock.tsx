@@ -7,6 +7,7 @@ export interface AnalogClockProps {
   total: number // minutes from midnight
   size?: number // px
   show24?: boolean // render the inner 24h numbers
+  showMinuteHelp?: boolean // render blue minute values (5, 10, 15…) inside the hour numbers
   showHandLegend?: boolean // reserved; legend lives in HandLegend
   step?: number // snap step (minutes) for the minute hand; if omitted -> not interactive
   onChange?: (total: number) => void
@@ -22,7 +23,7 @@ function polar(r: number, deg: number): { x: number; y: number } {
   return { x: C + r * Math.sin(a), y: C - r * Math.cos(a) }
 }
 
-export function AnalogClock({ total, size = 280, show24 = true, step, onChange, seconds, highlightRange }: AnalogClockProps) {
+export function AnalogClock({ total, size = 280, show24 = true, showMinuteHelp = false, step, onChange, seconds, highlightRange }: AnalogClockProps) {
   const { hour, minute } = angles(total)
 
   // Hands are drawn pointing straight up (angle 0); the surrounding <motion.g>
@@ -187,13 +188,32 @@ export function AnalogClock({ total, size = 280, show24 = true, step, onChange, 
         )
       })}
 
-      {/* hour numbers (outer) + 24h numbers (inner) */}
+      {/* hour numbers (outer) + optional inner rings: blue minute values
+          (5, 10, 15… — the colour of the minute hand) and/or orange 24h numbers.
+          When BOTH helpers are on, minutes keep the r50 ring and the 24h ring
+          tucks deeper so they never overlap. */}
       {Array.from({ length: 12 }, (_, i) => {
         const n = i + 1
         const outer = polar(70, n * 30)
-        const inner = polar(50, n * 30)
+        const inner = polar(showMinuteHelp && show24 ? 36 : 50, n * 30)
+        const minutePos = polar(50, n * 30)
         return (
           <g key={n}>
+            {showMinuteHelp && (
+              <text
+                x={minutePos.x}
+                y={minutePos.y}
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontFamily="Nunito, ui-rounded, system-ui, sans-serif"
+                fontSize={9.5}
+                fontWeight={700}
+                fill="#3B82F6"
+                pointerEvents="none"
+              >
+                {n === 12 ? '00' : n * 5}
+              </text>
+            )}
             <text
               x={outer.x}
               y={outer.y}
@@ -214,7 +234,7 @@ export function AnalogClock({ total, size = 280, show24 = true, step, onChange, 
                 textAnchor="middle"
                 dominantBaseline="central"
                 fontFamily="Nunito, ui-rounded, system-ui, sans-serif"
-                fontSize={10}
+                fontSize={showMinuteHelp ? 8.5 : 10}
                 fontWeight={700}
                 fill="#FB923C"
                 pointerEvents="none"

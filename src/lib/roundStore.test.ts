@@ -36,21 +36,21 @@ describe('roundStore', () => {
   beforeEach(() => localStorage.clear())
 
   it('round-trips a quiz round', () => {
-    const round: StoredQuizRound = { level: 3, questions: [q(60), q(120)], idx: 1, score: 1, startedAt: 12345 }
+    const round: StoredQuizRound = { level: 3, questions: [q(60), q(120)], idx: 1, score: 1, startedAt: 12345, elapsedMs: 9000 }
     saveQuizRound(round)
     expect(loadQuizRound()).toEqual(round)
   })
 
   it('round-trips a mission round', () => {
-    const round: StoredMissionRound = { missions: [m(30), m(15)], idx: 0, score: 0, startedAt: 999 }
+    const round: StoredMissionRound = { missions: [m(30), m(15)], idx: 0, score: 0, startedAt: 999, elapsedMs: 0 }
     saveMissionRound(round)
     expect(loadMissionRound()).toEqual(round)
   })
 
   it('treats a FINISHED round as absent', () => {
-    saveQuizRound({ level: 1, questions: [q(60)], idx: 1, score: 1, startedAt: 1 })
+    saveQuizRound({ level: 1, questions: [q(60)], idx: 1, score: 1, startedAt: 1, elapsedMs: 5 })
     expect(loadQuizRound()).toBeNull()
-    saveMissionRound({ missions: [m(5)], idx: 1, score: 0, startedAt: 1 })
+    saveMissionRound({ missions: [m(5)], idx: 1, score: 0, startedAt: 1, elapsedMs: 5 })
     expect(loadMissionRound()).toBeNull()
   })
 
@@ -61,13 +61,16 @@ describe('roundStore', () => {
     expect(loadQuizRound()).toBeNull()
     localStorage.setItem('relogio.round.missions.v1', JSON.stringify({ missions: [] }))
     expect(loadMissionRound()).toBeNull()
+    // pre-elapsedMs payloads (old format) are discarded, not crashed on
+    localStorage.setItem('relogio.round.quiz.v1', JSON.stringify({ level: 1, questions: [{ correct: 1 }], idx: 0, score: 0, startedAt: 1 }))
+    expect(loadQuizRound()).toBeNull()
   })
 
   it('clears', () => {
-    saveQuizRound({ level: 1, questions: [q(60)], idx: 0, score: 0, startedAt: 1 })
+    saveQuizRound({ level: 1, questions: [q(60)], idx: 0, score: 0, startedAt: 1, elapsedMs: 5 })
     clearQuizRound()
     expect(loadQuizRound()).toBeNull()
-    saveMissionRound({ missions: [m(5)], idx: 0, score: 0, startedAt: 1 })
+    saveMissionRound({ missions: [m(5)], idx: 0, score: 0, startedAt: 1, elapsedMs: 5 })
     clearMissionRound()
     expect(loadMissionRound()).toBeNull()
   })

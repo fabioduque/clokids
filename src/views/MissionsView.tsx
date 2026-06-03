@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { AnalogClock } from '../components/AnalogClock'
 import { fmtHourLang, makeMissionRound, MISSION_ROUND, MISSIONS_UNLOCK_COST, type Mission } from '../lib/missions'
@@ -66,10 +66,18 @@ export function MissionsView({ onStar, onSkyTime }: MissionsViewProps) {
   const [init] = useState(() => {
     const stored = loadMissionRound()
     if (stored) return stored
-    const fresh = { missions: makeMissionRound(Math.random, lang), idx: 0, score: 0, startedAt: Date.now() }
+    const fresh = { missions: makeMissionRound(Math.random, lang), idx: 0, score: 0, startedAt: Date.now(), elapsedMs: 0 }
     saveMissionRound(fresh)
     return fresh
   })
+  // ACTIVE time only (see QuizView): pauses while the child is elsewhere.
+  const elapsedRef = useRef(init.elapsedMs)
+  const resumeRef = useRef(Date.now())
+  function bumpElapsed() {
+    const now = Date.now()
+    elapsedRef.current += now - resumeRef.current
+    resumeRef.current = now
+  }
   const [round, setRound] = useState<Mission[]>(init.missions)
   const [idx, setIdx] = useState(init.idx)
   const [score, setScore] = useState(init.score)
@@ -86,9 +94,9 @@ export function MissionsView({ onStar, onSkyTime }: MissionsViewProps) {
   // Persist progress; retire the stored round + capture the time on finish.
   useEffect(() => {
     if (!done) {
-      saveMissionRound({ missions: round, idx, score, startedAt })
+      saveMissionRound({ missions: round, idx, score, startedAt, elapsedMs: elapsedRef.current })
     } else {
-      setFinishedInMs(Date.now() - startedAt)
+      setFinishedInMs(elapsedRef.current)
       clearMissionRound()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,10 +105,12 @@ export function MissionsView({ onStar, onSkyTime }: MissionsViewProps) {
   // Staged help: 1 = reveal the wedge (count the slice!), 2 = also fade 2 options.
   const [helpReady, setHelpReady] = useState(false)
   const [helpStage, setHelpStage] = useState(0)
+  const [hintHidden, setHintHidden] = useState(false)
   const [eliminated, setEliminated] = useState<number[]>([])
   useEffect(() => {
     setHelpReady(false)
     setHelpStage(0)
+    setHintHidden(false)
     setEliminated([])
     if (done) return
     const id = setTimeout(() => setHelpReady(true), HELP_DELAY_MS)
@@ -108,6 +118,10 @@ export function MissionsView({ onStar, onSkyTime }: MissionsViewProps) {
   }, [idx, done])
 
   function giveHelp() {
+    if (hintHidden) {
+      setHintHidden(false)
+      return
+    }
     if (helpStage === 0) setHelpStage(1)
     else if (helpStage === 1) {
       setHelpStage(2)
@@ -125,8 +139,10 @@ export function MissionsView({ onStar, onSkyTime }: MissionsViewProps) {
 
   function repeat() {
     clearMissionRound()
-    const fresh = { missions: makeMissionRound(Math.random, lang), idx: 0, score: 0, startedAt: Date.now() }
+    const fresh = { missions: makeMissionRound(Math.random, lang), idx: 0, score: 0, startedAt: Date.now(), elapsedMs: 0 }
     saveMissionRound(fresh)
+    elapsedRef.current = 0
+    resumeRef.current = Date.now()
     setRound(fresh.missions)
     setStartedAt(fresh.startedAt)
     setIdx(0)
@@ -148,6 +164,7 @@ export function MissionsView({ onStar, onSkyTime }: MissionsViewProps) {
     // A touch longer than the quiz: the wedge appears as feedback and the child
     // should have time to SEE the interval on the dial.
     setTimeout(() => {
+      bumpElapsed()
       setPicked(null)
       setIdx((i) => i + 1)
     }, 2000)
@@ -203,7 +220,7 @@ export function MissionsView({ onStar, onSkyTime }: MissionsViewProps) {
           round). */}
       <RoundHud
         counter={ui.missionCounter(idx + 1, MISSION_ROUND)}
-        helpVisible={helpReady && picked === null && helpStage < 2}
+        helpVisible={helpReady && picked === null && (helpStage < 2 || hintHidden)}
         onHelp={giveHelp}
         onAbandon={() => setConfirmRestart(true)}
         abandonAria={ui.abandonMissionsAria}
@@ -248,7 +265,7 @@ export function MissionsView({ onStar, onSkyTime }: MissionsViewProps) {
                   : null
               }
             />
-            <HintBubble text={missionHint(m, ui, lang)} visible={helpStage >= 1 && picked === null} />
+            <HintBubble text={missionHint(m, ui, lang)} visible={helpStage >= 1 && picked === null && !hintHidden} onDismiss={() => setHintHidden(true)} onMore={helpStage === 1 ? giveHelp : undefined} />
           </div>
 
           <div className="flex w-full max-w-md shrink-0 flex-col gap-2 sm:gap-3 lg:max-w-sm">

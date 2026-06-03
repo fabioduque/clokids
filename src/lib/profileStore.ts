@@ -9,7 +9,11 @@ export interface Settings {
   showHandLegend: boolean
   showSeconds: boolean
   show24h: boolean
+  showMinuteHelp: boolean // blue minute values (5, 10, 15…) on the dial
   lang: Lang // UI + voice language; Portuguese by default
+  voicePt?: string // chosen pt voiceURI (undefined = automatic best)
+  voiceEn?: string // chosen en voiceURI (undefined = automatic best)
+  speechRate: number // utterance rate: 0.6 slow · 0.9 normal · 1.1 fast
 }
 
 export interface Progress {
@@ -35,7 +39,9 @@ export const DEFAULT_PROFILE: Profile = {
     showHandLegend: true,
     showSeconds: false,
     show24h: false,
+    showMinuteHelp: false,
     lang: 'pt',
+    speechRate: 0.9,
   },
   progress: {
     unlockedLevel: 1,

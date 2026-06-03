@@ -60,7 +60,7 @@ export function FreePlayView({ total, onChange, settings, onSnapChange, seconds,
               <span aria-hidden>{pm ? '🌙' : '☀️'}</span>
             </button>
           )}
-          <AnalogClock total={total} step={settings.snap} onChange={onChange} size={560} seconds={seconds} show24={settings.show24h} />
+          <AnalogClock total={total} step={settings.snap} onChange={onChange} size={560} seconds={seconds} show24={settings.show24h} showMinuteHelp={settings.showMinuteHelp} />
         </div>
 
         {/* Actions hugging the lower arc. Agora resets to the live time; Ouvir

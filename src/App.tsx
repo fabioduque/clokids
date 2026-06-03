@@ -12,6 +12,7 @@ import { DEFAULT_PROFILE, loadProfile, saveProfile, type Profile, type Settings 
 import { playMinutes, shouldSuggestBreak } from './lib/playTimer'
 import { MISSIONS_UNLOCK_COST } from './lib/missions'
 import { LangContext, STR } from './lib/i18n'
+import { setPreferredVoice, setSpeechRate } from './lib/speak'
 import { loadQuizRound } from './lib/roundStore'
 import { type Level } from './lib/quiz'
 
@@ -70,6 +71,13 @@ export default function App() {
   }, [])
 
   useEffect(() => saveProfile(profile), [profile])
+
+  // Feed the speech module the parent's choices (voice per language + speed).
+  useEffect(() => {
+    setPreferredVoice('pt', profile.settings.voicePt)
+    setPreferredVoice('en', profile.settings.voiceEn)
+    setSpeechRate(profile.settings.speechRate ?? 0.9)
+  }, [profile.settings.voicePt, profile.settings.voiceEn, profile.settings.speechRate])
 
   // While live, refresh the displayed time every second so the clock (and the
   // sweeping seconds hand, when shown) stays current. Stops as soon as we leave
@@ -217,7 +225,7 @@ export default function App() {
           push its top above the scroll origin — the original clipping bug.)
           min-h-0 lets main actually shrink inside the flex column; max-w is
           kept snug on desktop so the composition reads as a group on the sky. */}
-      <main className="mx-auto w-full min-h-0 max-w-xl flex-1 overflow-y-auto px-4 pb-[78px] sm:pb-4 lg:max-w-5xl lg:px-8">
+      <main className="w-full min-h-0 flex-1 overflow-y-auto px-4 pb-[78px] sm:pb-4 lg:px-8">
         {screen === 'learn' && <LearnView onGoToPlay={() => navigate('play')} />}
         {screen === 'play' && (
           <FreePlayView

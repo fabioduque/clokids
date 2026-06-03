@@ -12,7 +12,10 @@ export interface StoredQuizRound {
   questions: Question[]
   idx: number
   score: number
-  startedAt: number // epoch ms
+  startedAt: number // epoch ms (informational)
+  // ACTIVE time spent answering, accumulated per answer. Walking away mid-round
+  // (the whole point of resumable rounds!) must not count toward the duration.
+  elapsedMs: number
 }
 
 export interface StoredMissionRound {
@@ -20,6 +23,7 @@ export interface StoredMissionRound {
   idx: number
   score: number
   startedAt: number
+  elapsedMs: number
 }
 
 const QUIZ_KEY = 'relogio.round.quiz.v1'
@@ -56,7 +60,12 @@ function remove(key: string): void {
 function isRoundBase(v: unknown): v is { idx: number; score: number; startedAt: number } {
   if (typeof v !== 'object' || v === null) return false
   const r = v as Record<string, unknown>
-  return typeof r.idx === 'number' && typeof r.score === 'number' && typeof r.startedAt === 'number'
+  return (
+    typeof r.idx === 'number' &&
+    typeof r.score === 'number' &&
+    typeof r.startedAt === 'number' &&
+    typeof r.elapsedMs === 'number'
+  )
 }
 
 function isQuizRound(v: unknown): v is StoredQuizRound {

@@ -57,6 +57,8 @@ export interface UIStrings {
   questionCounter: (i: number, n: number) => string
   missionCounter: (i: number, n: number) => string
   helpAria: string
+  hintDismissAria: string
+  nextHint: string
   restartRoundQ: string
   exitRoundQ: string
   confirmRestart: string
@@ -94,6 +96,14 @@ export interface UIStrings {
   toggleLegend: string
   toggleSeconds: string
   toggle24h: string
+  toggleMinuteHelp: string
+  voiceTitle: string
+  voiceAuto: string
+  voiceTestAria: string
+  voiceSample: string
+  speedSlow: string
+  speedNormal: string
+  speedFast: string
   resetTitle: string
   resetButton: string
   resetConfirm: string
@@ -157,6 +167,8 @@ export const STR: Record<Lang, UIStrings> = {
     questionCounter: (i, n) => `Pergunta ${i}/${n}`,
     missionCounter: (i, n) => `Missão ${i}/${n}`,
     helpAria: 'Pedir uma pista',
+    hintDismissAria: 'Fechar a pista',
+    nextHint: '🃏 Próxima pista',
     restartRoundQ: 'Queres começar uma ronda nova?',
     exitRoundQ: 'Queres sair desta ronda e voltar aos níveis?',
     confirmRestart: 'Sim, ronda nova',
@@ -191,6 +203,14 @@ export const STR: Record<Lang, UIStrings> = {
     toggleLegend: 'Legenda dos ponteiros',
     toggleSeconds: 'Mostrar segundos',
     toggle24h: 'Mostrar números 24h',
+    toggleMinuteHelp: 'Mostrar minutos junto aos números',
+    voiceTitle: 'Voz',
+    voiceAuto: 'Automática (a melhor disponível)',
+    voiceTestAria: 'Testar a voz',
+    voiceSample: 'Olá! Eu leio as horas contigo. São três e meia.',
+    speedSlow: '🐢 Devagar',
+    speedNormal: 'Normal',
+    speedFast: '🐇 Rápido',
     resetTitle: 'Recomeçar',
     resetButton: '🗑️ Apagar estrelas e recomeçar',
     resetConfirm: 'Apagar todas as estrelas e recomeçar do início?',
@@ -242,6 +262,8 @@ export const STR: Record<Lang, UIStrings> = {
     questionCounter: (i, n) => `Question ${i}/${n}`,
     missionCounter: (i, n) => `Mission ${i}/${n}`,
     helpAria: 'Ask for a hint',
+    hintDismissAria: 'Close the hint',
+    nextHint: '🃏 Next hint',
     restartRoundQ: 'Do you want to start a new round?',
     exitRoundQ: 'Do you want to leave this round and go back to levels?',
     confirmRestart: 'Yes, new round',
@@ -276,6 +298,14 @@ export const STR: Record<Lang, UIStrings> = {
     toggleLegend: 'Hands legend',
     toggleSeconds: 'Show seconds',
     toggle24h: 'Show 24h numbers',
+    toggleMinuteHelp: 'Show minutes next to the numbers',
+    voiceTitle: 'Voice',
+    voiceAuto: 'Automatic (best available)',
+    voiceTestAria: 'Test the voice',
+    voiceSample: 'Hi! I read the time with you. It is half past three.',
+    speedSlow: '🐢 Slow',
+    speedNormal: 'Normal',
+    speedFast: '🐇 Fast',
     resetTitle: 'Start over',
     resetButton: '🗑️ Erase stars and start over',
     resetConfirm: 'Erase all stars and start from the beginning?',

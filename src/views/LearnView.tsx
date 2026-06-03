@@ -14,6 +14,7 @@ const t = (h: number, m: number) => h * 60 + m
 interface Step {
   total: number
   show24: boolean
+  minuteHelp?: boolean
   title: string
   text: string
   spoken: string
@@ -31,6 +32,7 @@ const STEPS_BY_LANG: Record<Lang, Step[]> = {
     { total: t(1, 50), show24: false, title: 'Ainda é 1 hora', text: 'Está quase a tocar no 2... e mesmo assim, ainda é 1 hora!', spoken: 'Está quase a tocar no dois. E mesmo assim, ainda é uma hora.', highlightRange: { from: 1, to: 2 } },
     { total: t(2, 0), show24: false, title: 'Agora sim — 2 horas!', text: 'Só agora o ponteiro chegou às 2 horas — e o dos minutos está no 12.', spoken: 'Só agora o ponteiro pequeno chegou às duas horas. E o ponteiro dos minutos está no doze.' },
     { total: t(3, 10), show24: false, title: 'Os minutos', text: 'Cada número vale 5 minutos. Conta de 5 em 5.', spoken: 'O ponteiro grande conta os minutos. Cada número vale cinco minutos.' },
+    { total: t(1, 15), show24: false, minuteHelp: true, title: 'De 5 em 5', text: '1 vale 5 · 2 vale 10 · 3 vale 15… O ponteiro azul aponta para o 3: são 15 minutos!', spoken: 'Olha os números azuis: o um vale cinco, o dois vale dez, o três vale quinze. O ponteiro azul está no três: são quinze minutos.' },
     { total: t(3, 30), show24: false, title: 'E meia', text: 'Ponteiro grande no 6: três e meia (3:30).', spoken: 'No seis é e meia. Três e meia.' },
     { total: t(3, 15), show24: false, title: 'E um quarto', text: 'Ponteiro grande no 3: três e um quarto (3:15).', spoken: 'No três é e um quarto. Três e um quarto.' },
     { total: t(3, 45), show24: false, title: 'Um quarto para', text: 'Ponteiro grande no 9: um quarto para as 4 (3:45).', spoken: 'No nove é um quarto para. Um quarto para as quatro.' },
@@ -45,6 +47,7 @@ const STEPS_BY_LANG: Record<Lang, Step[]> = {
     { total: t(1, 50), show24: false, title: "Still 1 o'clock", text: "Almost touching the 2... and it is STILL 1 o'clock!", spoken: "It is almost touching the two. And it is still one o'clock.", highlightRange: { from: 1, to: 2 } },
     { total: t(2, 0), show24: false, title: "Now it's 2!", text: "Only now did the hand reach 2 o'clock — and the minute hand is on the 12.", spoken: "Only now did the small hand reach two o'clock. And the minute hand is on the twelve." },
     { total: t(3, 10), show24: false, title: 'The minutes', text: 'Each number is worth 5 minutes. Count by fives.', spoken: 'The big hand counts the minutes. Each number is worth five minutes.' },
+    { total: t(1, 15), show24: false, minuteHelp: true, title: 'Count by fives', text: '1 means 5 · 2 means 10 · 3 means 15… The blue hand points at the 3: that is 15 minutes!', spoken: 'Look at the blue numbers: one means five, two means ten, three means fifteen. The blue hand is on the three: that is fifteen minutes.' },
     { total: t(3, 30), show24: false, title: 'Half past', text: 'Big hand on the 6: half past three (3:30).', spoken: 'On the six it is half past. Half past three.' },
     { total: t(3, 15), show24: false, title: 'Quarter past', text: 'Big hand on the 3: quarter past three (3:15).', spoken: 'On the three it is quarter past. Quarter past three.' },
     { total: t(3, 45), show24: false, title: 'Quarter to', text: 'Big hand on the 9: quarter to four (3:45).', spoken: 'On the nine it is quarter to. Quarter to four.' },
@@ -104,6 +107,7 @@ export function LearnView({ onGoToPlay }: LearnViewProps) {
             <AnalogClock
               total={STEPS[step].total}
               show24={STEPS[step].show24}
+              showMinuteHelp={STEPS[step].minuteHelp ?? false}
               size={460}
               highlightRange={STEPS[step].highlightRange ?? null}
             />

@@ -32,6 +32,26 @@
     }
   }
 
+  /* Slim, sky-friendly scrollbars: transparent track, soft cocoa thumb. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(91, 52, 21, 0.28) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background: rgba(91, 52, 21, 0.25);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(91, 52, 21, 0.45);
+  }
+
   /* Focus: kill the browser's blue ring. Pointer taps/clicks show nothing;
      keyboard users get a friendly amber ring in the app's own palette (it
      follows each element's border-radius, so keep interactive things rounded). */

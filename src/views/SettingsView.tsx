@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import type { Settings } from '../lib/profileStore'
-import { useT, type Lang } from '../lib/i18n'
+import { useLang, useT, type Lang } from '../lib/i18n'
+import { listVoices, onVoicesReady, speak } from '../lib/speak'
 
 export interface SettingsViewProps {
   settings: Settings
@@ -24,6 +26,7 @@ export function SettingsView({ settings, onSettings, onReset }: SettingsViewProp
     ['showHandLegend', ui.toggleLegend],
     ['showSeconds', ui.toggleSeconds],
     ['show24h', ui.toggle24h],
+    ['showMinuteHelp', ui.toggleMinuteHelp],
   ]
   return (
     <div className="mx-auto flex max-w-md flex-col gap-5 py-6">
@@ -51,6 +54,8 @@ export function SettingsView({ settings, onSettings, onReset }: SettingsViewProp
           ))}
         </div>
       </section>
+
+      <VoiceSection settings={settings} onSet={set} />
 
       <section className="panel flex flex-col gap-3 p-5">
         <h3 className="font-display text-xl font-extrabold text-ink">{ui.snapSettingTitle}</h3>
@@ -93,5 +98,76 @@ export function SettingsView({ settings, onSettings, onReset }: SettingsViewProp
         </button>
       </section>
     </div>
+  )
+}
+
+/** Voice + reading-speed picker. Lists the voices the BROWSER exposes for the
+ * current app language (they come from the OS — see macOS Accessibility →
+ * Read & Speak → System Voice to install better ones), best-quality first. */
+function VoiceSection({
+  settings,
+  onSet,
+}: {
+  settings: Settings
+  onSet: <K extends keyof Settings>(key: K, value: Settings[K]) => void
+}) {
+  const lang = useLang()
+  const ui = useT()
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
+  useEffect(() => {
+    const refresh = () => setVoices(listVoices(lang))
+    refresh()
+    return onVoicesReady(refresh)
+  }, [lang])
+  const key = lang === 'pt' ? 'voicePt' : 'voiceEn'
+  const rate = settings.speechRate ?? 0.9
+  const RATES: Array<[number, string]> = [
+    [0.6, ui.speedSlow],
+    [0.9, ui.speedNormal],
+    [1.1, ui.speedFast],
+  ]
+  return (
+    <section className="panel flex flex-col gap-3 p-5">
+      <h3 className="font-display text-xl font-extrabold text-ink">{ui.voiceTitle}</h3>
+      <div className="flex items-stretch gap-2">
+        <select
+          value={settings[key] ?? ''}
+          onChange={(e) => onSet(key, (e.target.value || undefined) as Settings[typeof key])}
+          className="min-w-0 flex-1 rounded-xl border border-cardline bg-card px-3 py-2.5 font-bold text-ink"
+        >
+          <option value="">{ui.voiceAuto}</option>
+          {voices.map((v) => (
+            <option key={v.voiceURI} value={v.voiceURI}>
+              {v.name}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          onClick={() => speak(ui.voiceSample, lang)}
+          aria-label={ui.voiceTestAria}
+          className="btn-soft px-4 py-2"
+        >
+          ▶
+        </button>
+      </div>
+      <div className="flex gap-2">
+        {RATES.map(([r, label]) => (
+          <button
+            key={r}
+            type="button"
+            onClick={() => onSet('speechRate', r)}
+            aria-pressed={Math.abs(rate - r) < 0.01}
+            className={`flex-1 rounded-xl border px-3 py-2.5 font-display text-sm font-bold transition-colors ${
+              Math.abs(rate - r) < 0.01
+                ? 'border-transparent bg-ring text-white shadow-sm'
+                : 'border-cardline bg-card text-ink'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    </section>
   )
 }
