@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { AnalogClock } from '../components/AnalogClock'
 import { makeQuestion, type Level, type Question } from '../lib/quiz'
-import { format24, format12 } from '../lib/timeModel'
+import { format24, format12, split, hour12Of } from '../lib/timeModel'
 import { playSuccess, playError } from '../lib/sound'
 
 export interface QuizViewProps {
@@ -11,6 +11,18 @@ export interface QuizViewProps {
 }
 
 const ROUND = 5
+
+function pad2(n: number): string {
+  return String(n).padStart(2, '0')
+}
+
+// Digital text matched to the level: 24h levels read "15:00"; 12h levels read
+// the plain 12-hour form ("3:00", with hour 0 → "12:00") and never 13–24.
+function digitalText(total: number, is24h: boolean): string {
+  if (is24h) return format24(total)
+  const { hour24, minute } = split(total)
+  return `${hour12Of(hour24)}:${pad2(minute)}`
+}
 
 function buildRound(level: Level): Question[] {
   const rng = Math.random
@@ -118,7 +130,7 @@ export function QuizView({ level, onFinish }: QuizViewProps) {
               </div>
               {/* Prompt clock fills the leftover height above the options. */}
               <div className="flex w-full min-h-0 flex-1 items-center justify-center">
-                <AnalogClock total={q.correct} size={300} />
+                <AnalogClock total={q.correct} size={300} show24={q.is24h} />
               </div>
               <div className="grid w-full max-w-md shrink-0 grid-cols-2 gap-2 sm:gap-3">
                 {q.options.map((opt) => (
@@ -128,8 +140,10 @@ export function QuizView({ level, onFinish }: QuizViewProps) {
                     className={feedbackClass(opt, picked, q.correct)}
                     animate={pop(opt, picked, q.correct, !!reduce)}
                   >
-                    <span className="block text-xl leading-tight sm:text-2xl">{format24(opt)}</span>
-                    <span className="block text-xs font-bold text-ink24 sm:text-sm">{format12(opt)}</span>
+                    <span className="block text-xl leading-tight sm:text-2xl">{digitalText(opt, q.is24h)}</span>
+                    {q.is24h && (
+                      <span className="block text-xs font-bold text-ink24 sm:text-sm">{format12(opt)}</span>
+                    )}
                   </motion.button>
                 ))}
               </div>
@@ -140,7 +154,7 @@ export function QuizView({ level, onFinish }: QuizViewProps) {
                 <p className="text-lg font-bold text-ink sm:text-xl">Qual relógio mostra esta hora?</p>
                 <CorrectStar show={gotItRight} reduce={!!reduce} />
               </div>
-              <p className="shrink-0 text-4xl font-extrabold tabular-nums text-ink sm:text-6xl">{format24(q.correct)}</p>
+              <p className="shrink-0 text-4xl font-extrabold tabular-nums text-ink sm:text-6xl">{digitalText(q.correct, q.is24h)}</p>
               {/* The 2×2 grid of square option clocks fills the leftover area,
                   centered, capped so it never gets gigantic on desktop. */}
               <div className="flex w-full min-h-0 flex-1 items-center justify-center">
@@ -156,7 +170,7 @@ export function QuizView({ level, onFinish }: QuizViewProps) {
                       {/* Square box that fills the card's padding-box so all four
                           clocks are the same size and centered with equal margins. */}
                       <div className="flex aspect-square h-full w-full items-center justify-center">
-                        <AnalogClock total={opt} size={320} show24={false} />
+                        <AnalogClock total={opt} size={320} show24={q.is24h} />
                       </div>
                     </motion.button>
                   ))}

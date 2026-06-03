@@ -50,11 +50,6 @@ export default function App() {
     setLive(true)
   }
 
-  const totalStars =
-    profile.progress.starsByLevel[1] +
-    profile.progress.starsByLevel[2] +
-    profile.progress.starsByLevel[3]
-
   function updateSettings(settings: Settings) {
     setProfile((p) => ({ ...p, settings }))
   }
@@ -76,15 +71,17 @@ export default function App() {
 
   function finishQuiz(correct: number) {
     setProfile((p) => {
-      const stars = Math.max(p.progress.starsByLevel[quizLevel], correct)
-      const unlock = correct >= 4 && quizLevel < 3
+      const best = Math.max(p.progress.starsByLevel[quizLevel], correct)
+      const unlock = correct >= 4 && quizLevel < 10
         ? (Math.max(p.progress.unlockedLevel, (quizLevel + 1) as Level) as Level)
         : p.progress.unlockedLevel
       return {
         ...p,
         progress: {
+          ...p.progress,
           unlockedLevel: unlock,
-          starsByLevel: { ...p.progress.starsByLevel, [quizLevel]: stars },
+          totalStars: p.progress.totalStars + correct, // cumulative (a later task moves this to per-correct)
+          starsByLevel: { ...p.progress.starsByLevel, [quizLevel]: best },
         },
       }
     })
@@ -93,7 +90,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-bg font-rounded text-ink">
-      <NavBar screen={screen} onNavigate={navigate} totalStars={totalStars} />
+      <NavBar screen={screen} onNavigate={navigate} totalStars={profile.progress.totalStars} />
       {/* The view fills the viewport between the sticky 64px top bar and the
           fixed 78px bottom nav (mobile only), so screens can flex to fill the
           available height instead of leaving empty space. dvh keeps mobile

@@ -35,7 +35,7 @@ export function FreePlayView({ total, onChange, settings, onSnapChange, seconds,
           fill a tall phone, caps on desktop, and shrinks only when the
           viewport is genuinely short. */}
       <div className="flex w-full min-h-0 flex-1 items-center justify-center">
-        <AnalogClock total={total} step={settings.snap} onChange={onChange} size={420} seconds={seconds} />
+        <AnalogClock total={total} step={settings.snap} onChange={onChange} size={420} seconds={seconds} show24={settings.show24h} />
       </div>
       {/* Compact control stack: takes its natural height so the clock above
           flexes to fill the rest. Kept tight so it still fits at 360×480. */}
