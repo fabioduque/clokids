@@ -4,6 +4,7 @@ import { NavBar, type Screen } from './components/NavBar'
 import { FreePlayView } from './views/FreePlayView'
 import { LearnView } from './views/LearnView'
 import { QuizView } from './views/QuizView'
+import { LevelMap } from './views/LevelMap'
 import { SettingsView } from './views/SettingsView'
 import { DEFAULT_PROFILE, loadProfile, saveProfile, type Profile, type Settings } from './lib/profileStore'
 import { type Level } from './lib/quiz'
@@ -21,7 +22,8 @@ export default function App() {
   const [manualTotal, setManualTotal] = useState<number>(() => nowParts().total)
   const [live, setLive] = useState(true)
   const [now, setNow] = useState(nowParts)
-  const [quizLevel, setQuizLevel] = useState<Level>(1)
+  // null = show the level map (pick a level); a Level = a round is in progress.
+  const [quizLevel, setQuizLevel] = useState<Level | null>(null)
   const [roundId, setRoundId] = useState(0)
   // Each entry is one in-flight star flying from screen-center to the top-bar
   // counter. Keyed by an incrementing id so rapid stars animate independently
@@ -65,14 +67,34 @@ export default function App() {
   }
 
   function navigate(next: Screen) {
-    if (next === 'quiz') setRoundId((n) => n + 1)
+    // Entering the Quiz tab always lands on the level map, never auto-starting
+    // a round.
+    if (next === 'quiz') setQuizLevel(null)
     setScreen(next)
   }
 
-  function startQuiz(level: Level) {
+  // Start a fresh round of the chosen level (from the level map).
+  function startLevel(level: Level) {
     setQuizLevel(level)
     setRoundId((n) => n + 1)
-    setScreen('quiz')
+  }
+
+  // Replay the same level for another shot at more stars.
+  function repeatLevel() {
+    setRoundId((n) => n + 1)
+  }
+
+  // Jump straight into the next level (only offered when it's unlocked).
+  function nextLevel() {
+    if (quizLevel && quizLevel < 10) {
+      setQuizLevel((quizLevel + 1) as Level)
+      setRoundId((n) => n + 1)
+    }
+  }
+
+  // Back to the level map.
+  function exitToLevels() {
+    setQuizLevel(null)
   }
 
   // Award one star the instant an answer is correct: bump the cumulative count
@@ -90,25 +112,25 @@ export default function App() {
     setFlyingStars((list) => [...list, { id: Date.now() + Math.random(), tx, ty }])
   }
 
-  function finishQuiz(correct: number) {
+  function recordResult(score: number) {
     // Stars are awarded per-correct (see awardStar); here we only record the
     // best score for the level and unlock the next one — no totalStars add, or
-    // the round would double-count.
+    // the round would double-count. Stays on the quiz tab (the result screen
+    // handles where to go next).
     setProfile((p) => {
-      const best = Math.max(p.progress.starsByLevel[quizLevel], correct)
-      const unlock = correct >= 4 && quizLevel < 10
-        ? (Math.max(p.progress.unlockedLevel, (quizLevel + 1) as Level) as Level)
+      const best = Math.max(p.progress.starsByLevel[quizLevel!], score)
+      const unlock = score >= 4 && quizLevel! < 10
+        ? (Math.max(p.progress.unlockedLevel, (quizLevel! + 1) as Level) as Level)
         : p.progress.unlockedLevel
       return {
         ...p,
         progress: {
           ...p.progress,
           unlockedLevel: unlock,
-          starsByLevel: { ...p.progress.starsByLevel, [quizLevel]: best },
+          starsByLevel: { ...p.progress.starsByLevel, [quizLevel!]: best },
         },
       }
     })
-    setScreen('settings')
   }
 
   return (
@@ -130,13 +152,25 @@ export default function App() {
             onSnapChange={(snap) => updateSettings({ ...profile.settings, snap })}
           />
         )}
-        {screen === 'quiz' && <QuizView key={roundId} level={quizLevel} onFinish={finishQuiz} onStar={awardStar} />}
+        {screen === 'quiz' &&
+          (quizLevel == null ? (
+            <LevelMap progress={profile.progress} onPlay={startLevel} />
+          ) : (
+            <QuizView
+              key={roundId}
+              level={quizLevel}
+              onStar={awardStar}
+              onComplete={recordResult}
+              onRepeat={repeatLevel}
+              onNext={nextLevel}
+              onExit={exitToLevels}
+              nextAvailable={quizLevel < 10 && (quizLevel + 1) <= profile.progress.unlockedLevel}
+            />
+          ))}
         {screen === 'settings' && (
           <SettingsView
             settings={profile.settings}
-            progress={profile.progress}
             onSettings={updateSettings}
-            onPlay={startQuiz}
             onReset={resetProfile}
           />
         )}

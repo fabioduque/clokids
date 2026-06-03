@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { AnalogClock } from '../components/AnalogClock'
 import { makeQuestion, type Level, type Question } from '../lib/quiz'
@@ -7,11 +7,17 @@ import { playSuccess, playError } from '../lib/sound'
 
 export interface QuizViewProps {
   level: Level
-  onFinish: (correctCount: number) => void
   // Called once per correct answer so the App can award a star immediately
-  // (persist + top-bar count + fly animation). The end-of-round onFinish only
-  // records the best score and unlock.
+  // (persist + top-bar count + fly animation).
   onStar: () => void
+  // Fired once when the round finishes so the App records best score + unlock.
+  onComplete: (score: number) => void
+  // Result-screen actions.
+  onRepeat: () => void
+  onNext: () => void
+  onExit: () => void
+  // Whether the next level is unlocked (controls the "Próximo nível" button).
+  nextAvailable: boolean
 }
 
 const ROUND = 5
@@ -33,7 +39,7 @@ function buildRound(level: Level): Question[] {
   return Array.from({ length: ROUND }, () => makeQuestion(level, rng))
 }
 
-export function QuizView({ level, onFinish, onStar }: QuizViewProps) {
+export function QuizView({ level, onStar, onComplete, onRepeat, onNext, onExit, nextAvailable }: QuizViewProps) {
   const [round] = useState<Question[]>(() => buildRound(level))
   const [idx, setIdx] = useState(0)
   const [score, setScore] = useState(0)
@@ -44,9 +50,18 @@ export function QuizView({ level, onFinish, onStar }: QuizViewProps) {
 
   const results = useMemo(() => '⭐'.repeat(score) + '☆'.repeat(ROUND - score), [score, done])
 
+  // Record the result exactly once when the round finishes (best score + unlock
+  // live in the App). Stars themselves were already awarded per-correct.
+  useEffect(() => {
+    if (done) onComplete(score)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done])
+
   if (done) {
+    // Stagger so the buttons land after the star tally has fully revealed.
+    const buttonsDelay = reduce ? 0 : 0.25 + ROUND * 0.18 + 0.15
     return (
-      <div className="flex flex-col items-center gap-4 py-10 text-center">
+      <div className="mx-auto flex w-full max-w-sm flex-1 flex-col items-center justify-center gap-6 py-10 text-center">
         <motion.h2
           className="text-3xl font-extrabold text-ink"
           initial={reduce ? false : { scale: 0.8, opacity: 0 }}
@@ -57,7 +72,7 @@ export function QuizView({ level, onFinish, onStar }: QuizViewProps) {
         </motion.h2>
 
         {/* Staggered reveal: each star pops in with a small delay for a satisfying tally. */}
-        <p className="text-4xl" aria-label={`${score} de ${ROUND}`}>
+        <p className="text-5xl" aria-label={`${score} de ${ROUND}`}>
           {Array.from(results).map((ch, i) => (
             <motion.span
               key={i}
@@ -76,15 +91,38 @@ export function QuizView({ level, onFinish, onStar }: QuizViewProps) {
           ))}
         </p>
 
-        <motion.button
-          className="rounded-full bg-ring px-6 py-3 text-xl font-extrabold text-white shadow-md active:scale-95"
-          onClick={() => onFinish(score)}
-          initial={reduce ? false : { opacity: 0, y: 8 }}
+        <motion.div
+          className="flex w-full flex-col gap-3"
+          initial={reduce ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: reduce ? 0 : 0.25 + ROUND * 0.18 + 0.1 }}
+          transition={{ delay: buttonsDelay }}
         >
-          Continuar
-        </motion.button>
+          <button
+            type="button"
+            onClick={onRepeat}
+            className="rounded-full bg-ring px-6 py-4 text-xl font-extrabold text-white shadow-md transition-transform active:scale-95"
+          >
+            🔁 Repetir
+          </button>
+
+          {nextAvailable && (
+            <button
+              type="button"
+              onClick={onNext}
+              className="rounded-full bg-green-500 px-6 py-4 text-xl font-extrabold text-white shadow-md transition-transform active:scale-95"
+            >
+              Próximo nível →
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={onExit}
+            className="rounded-full border-2 border-ring/40 bg-white px-6 py-3 text-lg font-extrabold text-ink shadow-sm transition-transform active:scale-95"
+          >
+            Níveis
+          </button>
+        </motion.div>
       </div>
     )
   }
