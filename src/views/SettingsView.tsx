@@ -1,12 +1,8 @@
-import type { Settings, Progress } from '../lib/profileStore'
-import type { Level } from '../lib/quiz'
-import { LevelMap } from './LevelMap'
+import type { Settings } from '../lib/profileStore'
 
 export interface SettingsViewProps {
   settings: Settings
-  progress: Progress
   onSettings: (s: Settings) => void
-  onPlay: (level: Level) => void
   onReset: () => void
 }
 
@@ -17,7 +13,7 @@ const SNAP_LABEL: Record<Settings['snap'], string> = {
   1: 'Minuto a minuto',
 }
 
-export function SettingsView({ settings, progress, onSettings, onPlay, onReset }: SettingsViewProps) {
+export function SettingsView({ settings, onSettings, onReset }: SettingsViewProps) {
   function set<K extends keyof Settings>(key: K, value: Settings[K]) {
     onSettings({ ...settings, [key]: value })
   }
@@ -53,11 +49,6 @@ export function SettingsView({ settings, progress, onSettings, onPlay, onReset }
               onChange={(e) => set(key, e.target.checked as never)} />
           </label>
         ))}
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h3 className="text-xl font-extrabold text-ink">Níveis</h3>
-        <LevelMap progress={progress} onPlay={onPlay} />
       </section>
 
       <section className="flex flex-col gap-2">

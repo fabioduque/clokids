@@ -11,7 +11,8 @@ export interface LevelMapProps {
 
 export function LevelMap({ progress, onPlay }: LevelMapProps) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-2 py-6">
+      <h2 className="mb-2 text-center text-2xl font-extrabold text-ink">Escolhe um nível</h2>
       {LEVELS.map((lvl) => {
         const locked = lvl > progress.unlockedLevel
         const stars = progress.starsByLevel[lvl]
