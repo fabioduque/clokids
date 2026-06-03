@@ -46,7 +46,7 @@ export function LearnView({ onGoToPlay }: LearnViewProps) {
   }, [step])
 
   return (
-    <div className="flex h-full min-h-0 flex-col items-center gap-2 py-2 sm:gap-3 sm:py-4">
+    <div className="flex h-full min-h-0 flex-col items-center gap-2 py-2 sm:gap-3 sm:py-4 lg:justify-center lg:gap-4">
       {/* TOP: progress — dots + "Passo X de N" */}
       <div className="flex shrink-0 flex-col items-center gap-1.5">
         <div className="flex items-center gap-1.5" aria-hidden>
@@ -68,9 +68,11 @@ export function LearnView({ onGoToPlay }: LearnViewProps) {
         <FinalScreen onGoToPlay={onGoToPlay} reduce={!!reduce} />
       ) : (
         <>
-          {/* MIDDLE: the clock owns the leftover vertical space so it stays LARGE.
-              It animates (eases) between steps as `total` changes. */}
-          <div className="flex w-full min-h-0 flex-1 items-center justify-center">
+          {/* MIDDLE: the clock owns the leftover vertical space so it stays LARGE
+              below lg. It animates (eases) between steps as `total` changes. On
+              lg it takes a fixed comfortable size so the clock + text + nav read
+              as one centred compact group. */}
+          <div className="flex w-full min-h-0 flex-1 items-center justify-center lg:h-[340px] lg:flex-none">
             <AnalogClock
               total={STEPS[step].total}
               show24={STEPS[step].show24}

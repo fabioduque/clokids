@@ -106,7 +106,7 @@ export function QuizView({ level, onFinish, onStar }: QuizViewProps) {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col items-center gap-2 pb-2 pt-3 sm:gap-4 sm:py-4">
+    <div className="flex h-full min-h-0 flex-col items-center gap-2 pb-2 pt-3 sm:gap-4 sm:py-4 lg:justify-center lg:gap-4">
       <div className="flex shrink-0 gap-2">
         {Array.from({ length: ROUND }, (_, i) => (
           <span key={i} className={`h-2 w-2 rounded-full sm:h-3 sm:w-3 ${i < idx ? 'bg-ring' : 'bg-ink/20'}`} />
@@ -119,7 +119,7 @@ export function QuizView({ level, onFinish, onStar }: QuizViewProps) {
       <AnimatePresence mode="wait">
         <motion.div
           key={idx}
-          className="flex w-full min-h-0 flex-1 flex-col items-center gap-2 sm:gap-4"
+          className="flex w-full min-h-0 flex-1 flex-col items-center gap-2 sm:gap-4 lg:flex-none lg:gap-4"
           initial={reduce ? false : { opacity: 0, x: 16 }}
           animate={{ opacity: 1, x: 0 }}
           exit={reduce ? undefined : { opacity: 0, x: -16 }}
@@ -128,8 +128,10 @@ export function QuizView({ level, onFinish, onStar }: QuizViewProps) {
           {q.direction === 'analogToDigital' ? (
             <>
               <p className="shrink-0 text-lg font-bold text-ink sm:text-xl">Que horas são?</p>
-              {/* Prompt clock fills the leftover height above the options. */}
-              <div className="flex w-full min-h-0 flex-1 items-center justify-center">
+              {/* Prompt clock fills the leftover height above the options below
+                  lg; on lg it takes a fixed comfortable size so the prompt +
+                  options read as one centred compact group. */}
+              <div className="flex w-full min-h-0 flex-1 items-center justify-center lg:h-[300px] lg:flex-none">
                 <AnalogClock total={q.correct} size={300} show24={q.is24h} />
               </div>
               <div className="grid w-full max-w-md shrink-0 grid-cols-2 gap-2 sm:gap-3">
@@ -153,8 +155,9 @@ export function QuizView({ level, onFinish, onStar }: QuizViewProps) {
               <p className="shrink-0 text-lg font-bold text-ink sm:text-xl">Qual relógio mostra esta hora?</p>
               <p className="shrink-0 text-4xl font-extrabold tabular-nums text-ink sm:text-6xl">{digitalText(q.correct, q.is24h)}</p>
               {/* The 2×2 grid of square option clocks fills the leftover area,
-                  centered, capped so it never gets gigantic on desktop. */}
-              <div className="flex w-full min-h-0 flex-1 items-center justify-center">
+                  centered, capped so it never gets gigantic on desktop. On lg it
+                  takes a fixed size so the prompt + grid form one compact group. */}
+              <div className="flex w-full min-h-0 flex-1 items-center justify-center lg:h-[360px] lg:flex-none">
                 <div className="grid aspect-square h-full max-w-full grid-cols-2 grid-rows-2 gap-2 sm:gap-3" style={{ maxHeight: 'min(30rem, 100%)', maxWidth: 'min(30rem, 100%)' }}>
                   {q.options.map((opt, i) => (
                     <motion.button
