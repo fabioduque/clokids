@@ -8,6 +8,10 @@ import { playSuccess, playError } from '../lib/sound'
 export interface QuizViewProps {
   level: Level
   onFinish: (correctCount: number) => void
+  // Called once per correct answer so the App can award a star immediately
+  // (persist + top-bar count + fly animation). The end-of-round onFinish only
+  // records the best score and unlock.
+  onStar: () => void
 }
 
 const ROUND = 5
@@ -29,7 +33,7 @@ function buildRound(level: Level): Question[] {
   return Array.from({ length: ROUND }, () => makeQuestion(level, rng))
 }
 
-export function QuizView({ level, onFinish }: QuizViewProps) {
+export function QuizView({ level, onFinish, onStar }: QuizViewProps) {
   const [round] = useState<Question[]>(() => buildRound(level))
   const [idx, setIdx] = useState(0)
   const [score, setScore] = useState(0)
@@ -39,8 +43,6 @@ export function QuizView({ level, onFinish }: QuizViewProps) {
   const reduce = useReducedMotion()
 
   const results = useMemo(() => '⭐'.repeat(score) + '☆'.repeat(ROUND - score), [score, done])
-
-  const gotItRight = picked !== null && picked === q?.correct
 
   if (done) {
     return (
@@ -93,6 +95,7 @@ export function QuizView({ level, onFinish }: QuizViewProps) {
     if (option === q.correct) {
       setScore((s) => s + 1)
       playSuccess()
+      onStar()
     } else {
       playError()
     }
@@ -124,10 +127,7 @@ export function QuizView({ level, onFinish }: QuizViewProps) {
         >
           {q.direction === 'analogToDigital' ? (
             <>
-              <div className="relative shrink-0">
-                <p className="text-lg font-bold text-ink sm:text-xl">Que horas são?</p>
-                <CorrectStar show={gotItRight} reduce={!!reduce} />
-              </div>
+              <p className="shrink-0 text-lg font-bold text-ink sm:text-xl">Que horas são?</p>
               {/* Prompt clock fills the leftover height above the options. */}
               <div className="flex w-full min-h-0 flex-1 items-center justify-center">
                 <AnalogClock total={q.correct} size={300} show24={q.is24h} />
@@ -150,10 +150,7 @@ export function QuizView({ level, onFinish }: QuizViewProps) {
             </>
           ) : (
             <>
-              <div className="relative shrink-0">
-                <p className="text-lg font-bold text-ink sm:text-xl">Qual relógio mostra esta hora?</p>
-                <CorrectStar show={gotItRight} reduce={!!reduce} />
-              </div>
+              <p className="shrink-0 text-lg font-bold text-ink sm:text-xl">Qual relógio mostra esta hora?</p>
               <p className="shrink-0 text-4xl font-extrabold tabular-nums text-ink sm:text-6xl">{digitalText(q.correct, q.is24h)}</p>
               {/* The 2×2 grid of square option clocks fills the leftover area,
                   centered, capped so it never gets gigantic on desktop. */}
@@ -181,30 +178,6 @@ export function QuizView({ level, onFinish }: QuizViewProps) {
         </motion.div>
       </AnimatePresence>
     </div>
-  )
-}
-
-/** A gentle reward star that pops in over the question when the answer is right. */
-function CorrectStar({ show, reduce }: { show: boolean; reduce: boolean }) {
-  return (
-    <AnimatePresence>
-      {show && (
-        <motion.span
-          className="pointer-events-none absolute -right-8 -top-3 text-3xl"
-          aria-hidden
-          initial={reduce ? { opacity: 1 } : { scale: 0, rotate: -25, opacity: 0 }}
-          animate={
-            reduce
-              ? { opacity: 1 }
-              : { scale: [0, 1.2, 1], rotate: [-25, 8, 0], opacity: 1 }
-          }
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-        >
-          ⭐
-        </motion.span>
-      )}
-    </AnimatePresence>
   )
 }
 

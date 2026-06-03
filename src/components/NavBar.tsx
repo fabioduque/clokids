@@ -1,3 +1,5 @@
+import { motion, useReducedMotion } from 'framer-motion'
+
 export type Screen = 'learn' | 'play' | 'quiz' | 'settings'
 
 export interface NavBarProps {
@@ -13,6 +15,7 @@ const MAIN_TABS: Array<[Exclude<Screen, 'settings'>, string, string]> = [
 ]
 
 export function NavBar({ screen, onNavigate, totalStars }: NavBarProps) {
+  const reduce = useReducedMotion()
   return (
     <>
       {/* Top bar: single row, never wraps. */}
@@ -52,7 +55,18 @@ export function NavBar({ screen, onNavigate, totalStars }: NavBarProps) {
             className="rounded-full bg-white/20 px-3 py-1.5 font-extrabold tabular-nums"
             aria-label={`${totalStars} estrelas`}
           >
-            <span aria-hidden>⭐</span> {totalStars}
+            <span id="topbar-star" aria-hidden className="inline-block">⭐</span>{' '}
+            {/* The count pops (1 → 1.3 → 1) whenever a star is awarded, keyed on
+                the value so each increment retriggers the spring. */}
+            <motion.span
+              key={totalStars}
+              className="inline-block"
+              initial={reduce ? false : { scale: 1.3 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 14 }}
+            >
+              {totalStars}
+            </motion.span>
           </span>
 
           <button
