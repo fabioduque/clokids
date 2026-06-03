@@ -7,11 +7,13 @@ export interface Settings {
   dayNight: boolean // false = manhã, true = tarde/noite
   showHandLegend: boolean
   showSeconds: boolean
+  show24h: boolean
 }
 
 export interface Progress {
   unlockedLevel: Level
-  starsByLevel: Record<Level, number>
+  totalStars: number // cumulative stars earned (used by the top-bar; incremented per correct answer by the UI)
+  starsByLevel: Record<Level, number> // best score per level (0..5)
 }
 
 export interface Profile {
@@ -29,10 +31,12 @@ export const DEFAULT_PROFILE: Profile = {
     dayNight: false,
     showHandLegend: true,
     showSeconds: false,
+    show24h: true,
   },
   progress: {
     unlockedLevel: 1,
-    starsByLevel: { 1: 0, 2: 0, 3: 0 },
+    totalStars: 0,
+    starsByLevel: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0 },
   },
 }
 
@@ -43,11 +47,15 @@ export function loadProfile(): Profile {
     const parsed = JSON.parse(raw) as Profile
     // shallow shape guard: fall back if required keys are missing
     if (!parsed?.settings || !parsed?.progress) return structuredClone(DEFAULT_PROFILE)
-    // Merge stored values over the defaults so older profiles that predate a
-    // newer setting (e.g. showSeconds) come back with the default, not undefined.
+    // Deep-ish merge so older profiles (3 levels, no totalStars, no show24h) come
+    // back with every new key defaulted, while preserving stored values.
     return {
       settings: { ...DEFAULT_PROFILE.settings, ...parsed.settings },
-      progress: { ...DEFAULT_PROFILE.progress, ...parsed.progress },
+      progress: {
+        ...DEFAULT_PROFILE.progress,
+        ...parsed.progress,
+        starsByLevel: { ...DEFAULT_PROFILE.progress.starsByLevel, ...(parsed.progress?.starsByLevel ?? {}) },
+      },
     }
   } catch {
     return structuredClone(DEFAULT_PROFILE)
