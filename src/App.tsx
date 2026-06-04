@@ -244,7 +244,9 @@ export default function App() {
     // never grows a scrollbar.
     <LangContext.Provider value={profile.settings.lang}>
     <div className="relative flex h-dvh flex-col font-rounded text-ink">
-      <SkyBackground total={ambientTotal} />
+      {/* "Simples" theme: no sky/sun/moon/stars — the plain cream canvas the
+          html fallback provides. */}
+      {profile.settings.theme !== 'simple' && <SkyBackground total={ambientTotal} />}
       <NavBar
         screen={screen}
         onNavigate={navigate}

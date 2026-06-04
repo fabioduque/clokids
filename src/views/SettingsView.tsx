@@ -62,6 +62,33 @@ export function SettingsView({ settings, onSettings, onReset }: SettingsViewProp
         </div>
       </section>
 
+      {/* Theme: the living sky, or the plain super-simple canvas. */}
+      <section className="panel flex flex-col gap-3 p-5">
+        <h3 className="font-display text-xl font-extrabold text-ink">{ui.themeTitle}</h3>
+        <div className="flex gap-2">
+          {(
+            [
+              ['sky', ui.themeSky],
+              ['simple', ui.themeSimple],
+            ] as Array<[Settings['theme'], string]>
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => set('theme', value)}
+              aria-pressed={settings.theme === value}
+              className={`flex-1 rounded-xl border px-3 py-2.5 font-display text-base font-bold transition-colors ${
+                settings.theme === value
+                  ? 'border-transparent bg-ring text-white shadow-sm'
+                  : 'border-cardline bg-card text-ink'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </section>
+
       <VoiceSection settings={settings} onSet={set} />
 
       <section className="panel flex flex-col gap-3 p-5">

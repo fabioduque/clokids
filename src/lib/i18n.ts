@@ -103,6 +103,9 @@ export interface UIStrings {
   zoneLevelAria: (zone: string, level: number) => string
   // Settings
   languageTitle: string
+  themeTitle: string
+  themeSky: string
+  themeSimple: string
   snapSettingTitle: string
   snapLabels: Record<15 | 5 | 1, string>
   helpersTitle: string
@@ -233,6 +236,9 @@ export const STR: Record<Lang, UIStrings> = {
     storyEndText: 'O Cloki viveu o dia todo contigo. Obrigado!',
     zoneLevelAria: (zone, level) => `Jogar ${zone}, nível ${level}`,
     languageTitle: 'Língua',
+    themeTitle: 'Tema',
+    themeSky: '🌅 Com céu',
+    themeSimple: '⬜ Simples',
     snapSettingTitle: 'Precisão dos minutos',
     snapLabels: { 15: 'Quartos (15 min)', 5: 'Cinco em cinco', 1: 'Minuto a minuto' },
     helpersTitle: 'Ajudas',
@@ -351,6 +357,9 @@ export const STR: Record<Lang, UIStrings> = {
     storyEndText: 'Cloki lived the whole day with you. Thank you!',
     zoneLevelAria: (zone, level) => `Play ${zone}, level ${level}`,
     languageTitle: 'Language',
+    themeTitle: 'Theme',
+    themeSky: '🌅 With sky',
+    themeSimple: '⬜ Simple',
     snapSettingTitle: 'Minute precision',
     snapLabels: { 15: 'Quarters (15 min)', 5: 'Five by five', 1: 'To the minute' },
     helpersTitle: 'Helpers',

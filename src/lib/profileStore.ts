@@ -2,6 +2,7 @@ import type { Level } from './quiz'
 import type { Lang } from './i18n'
 
 export interface Settings {
+  theme: 'sky' | 'simple' // living sky vs the plain cream canvas
   snap: 15 | 5 | 1
   showWords: boolean
   voice: boolean
@@ -38,6 +39,7 @@ export const STORAGE_KEY = 'relogio.profile.v1'
 
 export const DEFAULT_PROFILE: Profile = {
   settings: {
+    theme: 'sky',
     snap: 15,
     showWords: true,
     voice: true,
