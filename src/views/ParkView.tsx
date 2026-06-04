@@ -14,6 +14,8 @@ import type { Progress } from '../lib/profileStore'
 
 export interface ParkViewProps {
   progress: Progress
+  /** Settings opt-in: glow green the moment a set-clock dial is right. */
+  confirmGlow: boolean
   onStar: () => void
   onSkyTime?: (total: number | null) => void
   onParkResult: (zone: ZoneId, level: ParkLevel, score: number) => void
@@ -28,7 +30,7 @@ type ParkScreen =
 const GAME_ZONES: Array<Exclude<ZoneId, 'casa'>> = ['estacao', 'zoo', 'cinema', 'oficina']
 const LEVELS: ParkLevel[] = [1, 2, 3]
 
-export function ParkView({ progress, onStar, onSkyTime, onParkResult, onStoryDone }: ParkViewProps) {
+export function ParkView({ progress, confirmGlow, onStar, onSkyTime, onParkResult, onStoryDone }: ParkViewProps) {
   const lang = useLang()
   const ui = useT()
   // Resume an unfinished park round (the kid may have hopped away mid-round).
@@ -49,6 +51,7 @@ export function ParkView({ progress, onStar, onSkyTime, onParkResult, onStoryDon
       <ParkRoundView
         zone={screen.zone}
         level={screen.level}
+        confirmGlow={confirmGlow}
         onStar={onStar}
         onSkyTime={onSkyTime}
         onComplete={onParkResult}
@@ -62,6 +65,7 @@ export function ParkView({ progress, onStar, onSkyTime, onParkResult, onStoryDon
     return (
       <StoryDayView
         day={day}
+        confirmGlow={confirmGlow}
         onSkyTime={onSkyTime}
         onDone={onStoryDone}
         onExit={() => setScreen({ type: 'map' })}

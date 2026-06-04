@@ -25,6 +25,9 @@ const HELP_DELAY_MS = 15_000
 export interface ParkRoundViewProps {
   zone: Exclude<ZoneId, 'casa'>
   level: ParkLevel
+  /** Settings opt-in: glow green the moment the dial is right (default off —
+   * otherwise the glow answers BEFORE the child presses Pronto). */
+  confirmGlow: boolean
   onStar: () => void
   onSkyTime?: (total: number | null) => void
   // Round finished: record the best score for this zone+level.
@@ -32,7 +35,7 @@ export interface ParkRoundViewProps {
   onExit: () => void
 }
 
-export function ParkRoundView({ zone, level, onStar, onSkyTime, onComplete, onExit }: ParkRoundViewProps) {
+export function ParkRoundView({ zone, level, confirmGlow, onStar, onSkyTime, onComplete, onExit }: ParkRoundViewProps) {
   const lang = useLang()
   const ui = useT()
   const reduce = useReducedMotion()
@@ -237,7 +240,7 @@ export function ParkRoundView({ zone, level, onStar, onSkyTime, onComplete, onEx
           transition={{ duration: 0.25, ease: 'easeOut' }}
         >
           {task.kind === 'set' ? (
-            <SetClockPanel key={`set-${idx}`} task={task} solved={solved} onSolved={onSetSolved} />
+            <SetClockPanel key={`set-${idx}`} task={task} solved={solved} confirmGlow={confirmGlow} onSolved={onSetSolved} />
           ) : (
             <ChoicePanel
               task={task}
@@ -255,15 +258,17 @@ export function ParkRoundView({ zone, level, onStar, onSkyTime, onComplete, onEx
   )
 }
 
-// ─── Set-the-clock panel: drag the hands, glow when right, press Pronto ─────
+// ─── Set-the-clock panel: drag the hands, press Pronto to find out ──────────
 
 function SetClockPanel({
   task,
   solved,
+  confirmGlow,
   onSolved,
 }: {
   task: SetClockTask
   solved: boolean
+  confirmGlow: boolean
   onSolved: (firstTry: boolean) => void
 }) {
   const lang = useLang()
@@ -291,14 +296,16 @@ function SetClockPanel({
 
   return (
     <div className="flex w-full flex-col items-center gap-2 sm:gap-3 lg:flex-row lg:items-center lg:justify-center lg:gap-12">
-      {/* Clock stage: the answer IS the clock. Glows softly when correct. */}
+      {/* Clock stage: the answer IS the clock. With confirmGlow on it glows
+          softly the moment it's right (a help — off by default, or it answers
+          before the child commits with Pronto). */}
       <motion.div
         key={shakeKey}
         animate={shakeKey > 0 && !solved ? { x: [0, -7, 7, -4, 4, 0] } : { x: 0 }}
         transition={{ duration: 0.4 }}
         className="relative flex aspect-square w-[min(80vw,38vh,22rem)] shrink-0 items-center justify-center lg:w-[min(50vh,26rem)]"
         style={{
-          filter: correctNow && !solved ? 'drop-shadow(0 0 14px rgba(74,222,128,0.85))' : undefined,
+          filter: confirmGlow && correctNow && !solved ? 'drop-shadow(0 0 14px rgba(74,222,128,0.85))' : undefined,
         }}
       >
         <AnalogClock

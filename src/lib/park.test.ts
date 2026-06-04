@@ -37,6 +37,21 @@ describe('makeParkRound', () => {
     }
   })
 
+  it('estação & cinema: BOTH hands start wrong, on the drag grid', () => {
+    // A +3h-only start used to leave the minute hand already on the answer.
+    for (const zone of ['estacao', 'cinema'] as const) {
+      for (const level of LEVELS) {
+        for (let seed = 1; seed <= 20; seed++) {
+          for (const task of makeParkRound(zone, level, lcg(seed * 31 + level), 'pt') as SetClockTask[]) {
+            expect(task.startAt % 60).not.toBe(task.target % 60) // minute hand wrong
+            expect(task.startAt % 720).not.toBe(task.target % 720) // dial appearance wrong
+            expect(task.startAt % task.step).toBe(0) // reachable by dragging
+          }
+        }
+      }
+    }
+  })
+
   it('cinema: leave-time = start − duration, realistic session window', () => {
     const rng = lcg(42)
     for (const task of makeParkRound('cinema', 3, rng, 'en') as SetClockTask[]) {

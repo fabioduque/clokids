@@ -74,6 +74,21 @@ export default function App() {
 
   useEffect(() => saveProfile(profile), [profile])
 
+  // Parents/teachers can switch whole areas off in Settings for a simpler app
+  // (Aprender and Brincar are always on). If the child is INSIDE an area when
+  // it's switched off, land softly on Brincar.
+  const { showQuiz, showMissions, showPark } = profile.settings
+  const hiddenTabs: Screen[] = [
+    ...(showQuiz ? [] : (['quiz'] as const)),
+    ...(showMissions ? [] : (['missions'] as const)),
+    ...(showPark ? [] : (['park'] as const)),
+  ]
+  useEffect(() => {
+    if ((screen === 'quiz' && !showQuiz) || (screen === 'missions' && !showMissions) || (screen === 'park' && !showPark)) {
+      setScreen('play')
+    }
+  }, [screen, showQuiz, showMissions, showPark])
+
   // Feed the speech module the parent's choices (voice per language + speed).
   useEffect(() => {
     setPreferredVoice('pt', profile.settings.voicePt)
@@ -235,6 +250,7 @@ export default function App() {
         onNavigate={navigate}
         totalStars={profile.progress.totalStars}
         playMinutes={playedMin}
+        hiddenTabs={hiddenTabs}
       />
       {/* The scroll container under the top bar (pb clears the fixed 78px
           bottom nav, mobile only). Its CONTENT is a plain block: each view root
@@ -282,6 +298,7 @@ export default function App() {
           (profile.progress.missionsUnlocked ? (
             <ParkView
               progress={profile.progress}
+              confirmGlow={profile.settings.confirmGlow}
               onStar={awardStar}
               onSkyTime={setSkyOverride}
               onParkResult={recordParkResult}

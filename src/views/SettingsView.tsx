@@ -27,6 +27,13 @@ export function SettingsView({ settings, onSettings, onReset }: SettingsViewProp
     ['showSeconds', ui.toggleSeconds],
     ['show24h', ui.toggle24h],
     ['showMinuteHelp', ui.toggleMinuteHelp],
+    ['confirmGlow', ui.toggleConfirmGlow],
+  ]
+  // Whole areas a parent/teacher can hide; Aprender and Brincar are always on.
+  const areas: Array<[keyof Settings, string]> = [
+    ['showQuiz', `❓ ${ui.navQuiz}`],
+    ['showMissions', `🎒 ${ui.navMissions}`],
+    ['showPark', `🎪 ${ui.navPark}`],
   ]
   return (
     <div className="mx-auto flex max-w-md flex-col gap-5 py-6">
@@ -76,6 +83,19 @@ export function SettingsView({ settings, onSettings, onReset }: SettingsViewProp
       <section className="panel flex flex-col gap-3 p-5">
         <h3 className="font-display text-xl font-extrabold text-ink">{ui.helpersTitle}</h3>
         {toggles.map(([key, label]) => (
+          <label key={key} className="flex items-center justify-between rounded-xl border border-cardline bg-card px-4 py-3 font-bold text-ink shadow-soft">
+            {label}
+            <input type="checkbox" className="h-6 w-6 accent-ring"
+              checked={settings[key] as boolean}
+              onChange={(e) => set(key, e.target.checked as never)} />
+          </label>
+        ))}
+      </section>
+
+      <section className="panel flex flex-col gap-3 p-5">
+        <h3 className="font-display text-xl font-extrabold text-ink">{ui.areasTitle}</h3>
+        <p className="text-sm font-bold text-ink/60">{ui.areasHint}</p>
+        {areas.map(([key, label]) => (
           <label key={key} className="flex items-center justify-between rounded-xl border border-cardline bg-card px-4 py-3 font-bold text-ink shadow-soft">
             {label}
             <input type="checkbox" className="h-6 w-6 accent-ring"

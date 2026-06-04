@@ -112,6 +112,9 @@ export interface UIStrings {
   toggleSeconds: string
   toggle24h: string
   toggleMinuteHelp: string
+  toggleConfirmGlow: string
+  areasTitle: string
+  areasHint: string
   voiceTitle: string
   voiceAuto: string
   voiceTestAria: string
@@ -239,6 +242,9 @@ export const STR: Record<Lang, UIStrings> = {
     toggleSeconds: 'Mostrar segundos',
     toggle24h: 'Mostrar números 24h',
     toggleMinuteHelp: 'Mostrar minutos junto aos números',
+    toggleConfirmGlow: 'Brilho verde quando o relógio fica certo (Parque)',
+    areasTitle: 'Áreas da app',
+    areasHint: 'Para algo mais simples, desliga áreas. Aprender e Brincar estão sempre ativos.',
     voiceTitle: 'Voz',
     voiceAuto: 'Automática (a melhor disponível)',
     voiceTestAria: 'Testar a voz',
@@ -354,6 +360,9 @@ export const STR: Record<Lang, UIStrings> = {
     toggleSeconds: 'Show seconds',
     toggle24h: 'Show 24h numbers',
     toggleMinuteHelp: 'Show minutes next to the numbers',
+    toggleConfirmGlow: 'Green glow when the clock is right (Park)',
+    areasTitle: 'App areas',
+    areasHint: 'For something simpler, switch areas off. Learn and Play are always on.',
     voiceTitle: 'Voice',
     voiceAuto: 'Automatic (best available)',
     voiceTestAria: 'Test the voice',

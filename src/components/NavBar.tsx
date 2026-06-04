@@ -10,6 +10,8 @@ export interface NavBarProps {
   totalStars: number
   /** Minutes played this session — shown as a small chip once it's meaningful. */
   playMinutes?: number
+  /** Areas a parent/teacher switched off in Settings (Learn & Play never hide). */
+  hiddenTabs?: Screen[]
 }
 
 const MAIN_TABS: Array<[Exclude<Screen, 'settings'>, string]> = [
@@ -20,7 +22,15 @@ const MAIN_TABS: Array<[Exclude<Screen, 'settings'>, string]> = [
   ['park', '🎪'],
 ]
 
-export function NavBar({ screen, onNavigate, totalStars, playMinutes = 0 }: NavBarProps) {
+// Tailwind needs the class names written out (no template interpolation).
+const GRID_COLS: Record<number, string> = {
+  2: 'grid-cols-2',
+  3: 'grid-cols-3',
+  4: 'grid-cols-4',
+  5: 'grid-cols-5',
+}
+
+export function NavBar({ screen, onNavigate, totalStars, playMinutes = 0, hiddenTabs = [] }: NavBarProps) {
   const reduce = useReducedMotion()
   const ui = useT()
   const tabLabel: Record<Exclude<Screen, 'settings'>, string> = {
@@ -30,6 +40,7 @@ export function NavBar({ screen, onNavigate, totalStars, playMinutes = 0 }: NavB
     missions: ui.navMissions,
     park: ui.navPark,
   }
+  const tabs = MAIN_TABS.filter(([s]) => !hiddenTabs.includes(s))
   // Quiet on initial mount: the star only pulses for stars earned NOW, not for
   // the count restored from storage on page load.
   const mounted = useRef(false)
@@ -53,7 +64,7 @@ export function NavBar({ screen, onNavigate, totalStars, playMinutes = 0 }: NavB
         <div className="flex shrink-0 items-center gap-2">
           {/* Brincar / Quiz pills — only on sm+ where there is room. */}
           <nav className="hidden items-center gap-2 sm:flex" aria-label={ui.mainNavAria}>
-            {MAIN_TABS.map(([s, icon]) => {
+            {tabs.map(([s, icon]) => {
               const label = tabLabel[s]
               const active = screen === s
               return (
@@ -134,10 +145,10 @@ export function NavBar({ screen, onNavigate, totalStars, playMinutes = 0 }: NavB
 
       {/* Bottom nav: mobile only, big thumb-friendly targets. */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t border-cardline bg-card/90 shadow-[0_-6px_20px_rgba(91,52,21,0.16)] backdrop-blur-md sm:hidden"
+        className={`fixed inset-x-0 bottom-0 z-20 grid ${GRID_COLS[tabs.length] ?? 'grid-cols-5'} border-t border-cardline bg-card/90 shadow-[0_-6px_20px_rgba(91,52,21,0.16)] backdrop-blur-md sm:hidden`}
         aria-label={ui.mainNavAria}
       >
-        {MAIN_TABS.map(([s, icon]) => {
+        {tabs.map(([s, icon]) => {
           const label = tabLabel[s]
           const active = screen === s
           return (

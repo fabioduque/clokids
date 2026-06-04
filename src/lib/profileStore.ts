@@ -10,6 +10,10 @@ export interface Settings {
   showSeconds: boolean
   show24h: boolean
   showMinuteHelp: boolean // blue minute values (5, 10, 15…) on the dial
+  confirmGlow: boolean // park set-clock: glow green the moment the dial is right (before Pronto)
+  showQuiz: boolean // parents/teachers can switch whole areas off…
+  showMissions: boolean
+  showPark: boolean // …Aprender and Brincar are always on
   lang: Lang // UI + voice language; Portuguese by default
   voicePt?: string // chosen pt voiceURI (undefined = automatic best)
   voiceEn?: string // chosen en voiceURI (undefined = automatic best)
@@ -42,6 +46,10 @@ export const DEFAULT_PROFILE: Profile = {
     showSeconds: false,
     show24h: false,
     showMinuteHelp: false,
+    confirmGlow: false,
+    showQuiz: true,
+    showMissions: true,
+    showPark: true,
     lang: 'pt',
     speechRate: 0.9,
   },

@@ -91,6 +91,15 @@ function sampleTime(minHour: number, maxHour: number, level: ParkLevel, rng: Rng
   return hour * 60 + minutes[Math.floor(rng() * minutes.length)]
 }
 
+/** A start clearly away from the target: 2–4 hours off AND a non-zero minute
+ * offset on the drag grid, so BOTH hands must move. (A flat +3h start left the
+ * minute hand already on the answer — half the task pre-solved.) */
+function startAwayFrom(target: number, step: 15 | 5 | 1, rng: Rng): number {
+  const hours = 2 + Math.floor(rng() * 3)
+  const minutes = step * (1 + Math.floor(rng() * (60 / step - 1)))
+  return mod1440(target + hours * 60 + minutes)
+}
+
 // ─── 🚂 Estação: set the clock to the departure time ────────────────────────
 function makeEstacao(level: ParkLevel, rng: Rng, lang: Lang): SetClockTask {
   const target = sampleTime(7, 20, level, rng) // trains run all day
@@ -103,7 +112,7 @@ function makeEstacao(level: ParkLevel, rng: Rng, lang: Lang): SetClockTask {
         ? `O comboio das ${f} vai partir! Acerta o relógio na hora da partida.`
         : `The ${f} train is leaving! Set the clock to departure time.`,
     target,
-    startAt: mod1440(target + 180), // clearly somewhere else, same minute granularity
+    startAt: startAwayFrom(target, LEVEL_STEP[level], rng),
     step: LEVEL_STEP[level],
     showDigital: false,
   }
@@ -125,7 +134,7 @@ function makeCinema(level: ParkLevel, rng: Rng, lang: Lang): SetClockTask {
         ? `O filme começa às ${f} e demoras ${dur} minutos até lá. Acerta o relógio na hora de SAIR de casa!`
         : `The movie starts at ${f} and it takes you ${dur} minutes to get there. Set the clock to the time you must LEAVE!`,
     target,
-    startAt: mod1440(target + 180),
+    startAt: startAwayFrom(target, 5, rng),
     step: 5, // leaving times land off the quarter grid even at L1 (e.g. 10h50)
     showDigital: false,
   }

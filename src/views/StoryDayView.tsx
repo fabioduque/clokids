@@ -16,12 +16,14 @@ import { useLang, useT } from '../lib/i18n'
 
 export interface StoryDayViewProps {
   day: StoryDay
+  /** Settings opt-in: glow green the moment the dial is right (default off). */
+  confirmGlow: boolean
   onSkyTime?: (total: number | null) => void
   onDone: (dayId: string) => void
   onExit: () => void
 }
 
-export function StoryDayView({ day, onSkyTime, onDone, onExit }: StoryDayViewProps) {
+export function StoryDayView({ day, confirmGlow, onSkyTime, onDone, onExit }: StoryDayViewProps) {
   const lang = useLang()
   const ui = useT()
   const reduce = useReducedMotion()
@@ -134,7 +136,7 @@ export function StoryDayView({ day, onSkyTime, onDone, onExit }: StoryDayViewPro
             animate={shakeKey > 0 && !solved ? { x: [0, -7, 7, -4, 4, 0] } : { x: 0 }}
             transition={{ duration: 0.4 }}
             className="relative flex aspect-square w-[min(76vw,34vh,20rem)] shrink-0 items-center justify-center lg:w-[min(48vh,25rem)]"
-            style={{ filter: total % 720 === moment.target % 720 && !solved ? 'drop-shadow(0 0 14px rgba(74,222,128,0.85))' : undefined }}
+            style={{ filter: confirmGlow && total % 720 === moment.target % 720 && !solved ? 'drop-shadow(0 0 14px rgba(74,222,128,0.85))' : undefined }}
           >
             <AnalogClock
               total={total}
