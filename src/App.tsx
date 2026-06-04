@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { NavBar, type Screen } from './components/NavBar'
 import { SkyBackground } from './components/SkyBackground'
@@ -10,7 +10,7 @@ import { MissionsLocked, MissionsView } from './views/MissionsView'
 import { ParkView } from './views/ParkView'
 import { SettingsView } from './views/SettingsView'
 import { DEFAULT_PROFILE, loadProfile, saveProfile, type Profile, type Settings } from './lib/profileStore'
-import { playMinutes, shouldSuggestBreak } from './lib/playTimer'
+import { awayResetsSession, playMinutes, shouldSuggestBreak } from './lib/playTimer'
 import { MISSIONS_UNLOCK_COST } from './lib/missions'
 import type { ParkLevel, ZoneId } from './lib/park'
 import { LangContext, STR } from './lib/i18n'
@@ -36,10 +36,11 @@ export default function App() {
   const [roundId, setRoundId] = useState(0)
   const reduce = useReducedMotion()
 
-  // Gentle screen-time nudge: the session starts on every page load (refresh =
-  // fresh start, by design). startTime is mirrored to localStorage so parents
-  // can inspect it; the ticking clock below recomputes elapsed minutes.
-  const [sessionStart] = useState(() => {
+  // Gentle screen-time nudge: the session starts on page load AND restarts
+  // after any real absence (tab hidden / laptop asleep ≥ AWAY_RESET_MIN) — the
+  // pause already happened, so don't greet the kid with "há 189 minutos!".
+  // startTime is mirrored to localStorage so parents can inspect it.
+  const markSessionStart = () => {
     const t = Date.now()
     try {
       localStorage.setItem('relogio.sessionStart', String(t))
@@ -47,12 +48,30 @@ export default function App() {
       /* storage unavailable — the nudge still works from memory */
     }
     return t
-  })
+  }
+  const [sessionStart, setSessionStart] = useState(markSessionStart)
   const [nowMs, setNowMs] = useState(() => Date.now())
   const [breakDismissedAt, setBreakDismissedAt] = useState<number | null>(null)
+  const lastSeenRef = useRef(Date.now())
   useEffect(() => {
-    const id = setInterval(() => setNowMs(Date.now()), 30_000)
-    return () => clearInterval(id)
+    const check = () => {
+      // While hidden, lastSeen stays frozen so the away-gap accrues; sleep
+      // freezes the interval itself, which amounts to the same thing.
+      if (document.hidden) return
+      const now = Date.now()
+      if (awayResetsSession(lastSeenRef.current, now)) {
+        setSessionStart(markSessionStart())
+        setBreakDismissedAt(null)
+      }
+      lastSeenRef.current = now
+      setNowMs(now)
+    }
+    const id = setInterval(check, 30_000)
+    document.addEventListener('visibilitychange', check)
+    return () => {
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', check)
+    }
   }, [])
   const playedMin = playMinutes(sessionStart, nowMs)
   const suggestBreak = shouldSuggestBreak(playedMin, breakDismissedAt)

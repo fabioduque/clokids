@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { playMinutes, shouldSuggestBreak, BREAK_AFTER_MIN, REMIND_EVERY_MIN } from './playTimer'
+import {
+  playMinutes,
+  shouldSuggestBreak,
+  awayResetsSession,
+  BREAK_AFTER_MIN,
+  REMIND_EVERY_MIN,
+  AWAY_RESET_MIN,
+} from './playTimer'
 
 describe('playMinutes', () => {
   it('floors elapsed milliseconds to whole minutes', () => {
@@ -30,5 +37,16 @@ describe('shouldSuggestBreak', () => {
     expect(shouldSuggestBreak(dismissedAt, dismissedAt)).toBe(false)
     expect(shouldSuggestBreak(dismissedAt + REMIND_EVERY_MIN - 1, dismissedAt)).toBe(false)
     expect(shouldSuggestBreak(dismissedAt + REMIND_EVERY_MIN, dismissedAt)).toBe(true)
+  })
+})
+
+describe('awayResetsSession', () => {
+  const t0 = 5_000_000
+  it('a short hop away does not reset', () => {
+    expect(awayResetsSession(t0, t0 + (AWAY_RESET_MIN - 1) * 60_000)).toBe(false)
+  })
+  it('a real pause (or a night with the tab open) resets', () => {
+    expect(awayResetsSession(t0, t0 + AWAY_RESET_MIN * 60_000)).toBe(true)
+    expect(awayResetsSession(t0, t0 + 189 * 60_000)).toBe(true)
   })
 })

@@ -6,6 +6,15 @@
 
 export const BREAK_AFTER_MIN = 30
 export const REMIND_EVERY_MIN = 15
+// Being away (tab hidden / laptop asleep) for this long IS a break: the session
+// restarts on return. Otherwise an open-overnight tab greets the kid with
+// "já brincas há 189 minutos!".
+export const AWAY_RESET_MIN = 10
+
+/** True when the gap since we last saw the app visible means a real pause. */
+export function awayResetsSession(lastSeenMs: number, nowMs: number): boolean {
+  return nowMs - lastSeenMs >= AWAY_RESET_MIN * 60_000
+}
 
 /** Minutes from when play started (startMs) to `nowMs`, floored, never negative. */
 export function playMinutes(startMs: number, nowMs: number): number {
