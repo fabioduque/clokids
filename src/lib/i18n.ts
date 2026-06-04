@@ -93,6 +93,7 @@ export interface UIStrings {
   zoneName: (z: ZoneId) => string
   zoneTagline: (z: ZoneId) => string
   pronto: string
+  correctBadge: string
   almostTryAgain: string
   setHint: (h: number, mPos: number) => string
   backToPark: string
@@ -227,6 +228,7 @@ export const STR: Record<Lang, UIStrings> = {
         casa: 'Vive um dia com o Cloki',
       })[z],
     pronto: '✅ Pronto!',
+    correctBadge: '⭐ Certo!',
     almostTryAgain: 'Quase! Olha bem e tenta outra vez.',
     setHint: (h, mPos) => `Pista: ponteiro pequeno e vermelho perto do ${h}; ponteiro grande e azul no ${mPos}.`,
     backToPark: '← Parque',
@@ -348,6 +350,7 @@ export const STR: Record<Lang, UIStrings> = {
         casa: 'Live a day with Cloki',
       })[z],
     pronto: '✅ Done!',
+    correctBadge: '⭐ Right!',
     almostTryAgain: 'Almost! Look closely and try again.',
     setHint: (h, mPos) => `Hint: small red hand near the ${h}; big blue hand on the ${mPos}.`,
     backToPark: '← Park',

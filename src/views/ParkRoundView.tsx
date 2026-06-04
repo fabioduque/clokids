@@ -273,6 +273,7 @@ function SetClockPanel({
 }) {
   const lang = useLang()
   const ui = useT()
+  const reduce = useReducedMotion()
   const [total, setTotal] = useState(task.startAt)
   const [attempts, setAttempts] = useState(0)
   const [shakeKey, setShakeKey] = useState(0)
@@ -305,7 +306,9 @@ function SetClockPanel({
         transition={{ duration: 0.4 }}
         className="relative flex aspect-square w-[min(80vw,38vh,22rem)] shrink-0 items-center justify-center lg:w-[min(50vh,26rem)]"
         style={{
-          filter: confirmGlow && correctNow && !solved ? 'drop-shadow(0 0 14px rgba(74,222,128,0.85))' : undefined,
+          // Solving always glows (it's confirmation, not a spoiler); BEFORE
+          // Pronto the glow only shows with the confirmGlow help on.
+          filter: solved || (confirmGlow && correctNow) ? 'drop-shadow(0 0 14px rgba(74,222,128,0.85))' : undefined,
         }}
       >
         <AnalogClock
@@ -317,9 +320,22 @@ function SetClockPanel({
         />
         <HintBubble text={hint} visible={attempts >= 2 && !solved} onDismiss={() => setAttempts(1)} />
         {solved && (
-          <div className="absolute -bottom-2 left-1/2 z-10 -translate-x-1/2">
-            <Cloki pose="cheer" size={64} />
-          </div>
+          <>
+            {/* CERTO! — a big bouncy badge over the clock, so the win lands. */}
+            <motion.div
+              className="pointer-events-none absolute inset-0 z-10 grid place-items-center"
+              initial={reduce ? false : { scale: 0, rotate: -10 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', stiffness: 360, damping: 13 }}
+            >
+              <span className="rounded-full bg-green-500 px-6 py-2.5 font-display text-3xl font-extrabold text-white shadow-panel">
+                {ui.correctBadge}
+              </span>
+            </motion.div>
+            <div className="absolute -bottom-2 left-1/2 z-10 -translate-x-1/2">
+              <Cloki pose="cheer" size={64} />
+            </div>
+          </>
         )}
       </motion.div>
 
@@ -336,7 +352,9 @@ function SetClockPanel({
           </p>
         )}
         {attempts > 0 && !solved && (
-          <p className="text-balance text-center text-sm font-bold text-ink/70">{ui.almostTryAgain}</p>
+          <p className="text-balance rounded-full bg-card/85 px-4 py-1.5 text-center text-sm font-bold text-ink/80 shadow-soft backdrop-blur-md">
+            {ui.almostTryAgain}
+          </p>
         )}
         <button type="button" onClick={confirm} disabled={solved} className="btn-sun w-full max-w-xs py-3 text-xl">
           {ui.pronto}

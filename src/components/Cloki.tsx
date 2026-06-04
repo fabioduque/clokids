@@ -47,23 +47,24 @@ export function Cloki({ pose = 'idle', size = 96 }: ClokiProps) {
   return (
     <svg viewBox="0 0 100 132" width={size} height={(size * 132) / 100} aria-hidden className="select-none">
       <motion.g animate={animate ? bodyAnim : { y: 0 }} transition={animate ? bodyTransition : still}>
-        {/* legs (behind the body) */}
-        <motion.line
-          x1={43} y1={104} x2={43} y2={120}
-          stroke="#D97706" strokeWidth={7} strokeLinecap="round"
+        {/* legs (behind the body) — the foot lives INSIDE the rotating group,
+            so it stays attached to the leg while stepping */}
+        <motion.g
           style={{ transformBox: 'view-box', transformOrigin: '43px 104px' }}
           animate={animate ? { rotate: leftLeg } : { rotate: 0 }}
           transition={animate ? limbTransition : still}
-        />
-        <motion.line
-          x1={57} y1={104} x2={57} y2={120}
-          stroke="#D97706" strokeWidth={7} strokeLinecap="round"
+        >
+          <line x1={43} y1={104} x2={43} y2={118} stroke="#D97706" strokeWidth={7} strokeLinecap="round" />
+          <ellipse cx={41.5} cy={120} rx={6} ry={3.4} fill="#92400E" />
+        </motion.g>
+        <motion.g
           style={{ transformBox: 'view-box', transformOrigin: '57px 104px' }}
           animate={animate ? { rotate: rightLeg } : { rotate: 0 }}
           transition={animate ? limbTransition : still}
-        />
-        <ellipse cx={41} cy={122} rx={6} ry={3.4} fill="#92400E" />
-        <ellipse cx={59} cy={122} rx={6} ry={3.4} fill="#92400E" />
+        >
+          <line x1={57} y1={104} x2={57} y2={118} stroke="#D97706" strokeWidth={7} strokeLinecap="round" />
+          <ellipse cx={58.5} cy={120} rx={6} ry={3.4} fill="#92400E" />
+        </motion.g>
 
         {/* arms */}
         <motion.line

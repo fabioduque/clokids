@@ -74,7 +74,10 @@ export function StoryDayView({ day, confirmGlow, onSkyTime, onDone, onExit }: St
         <h2 className="rounded-2xl bg-card/85 px-6 py-2 font-display text-3xl font-extrabold text-ink shadow-panel backdrop-blur-md">
           {ui.storyEndTitle}
         </h2>
-        <p className="font-bold text-ink/80">{ui.storyEndText}</p>
+        {/* Chip background: bare ink text disappears on the night sky. */}
+        <p className="rounded-full bg-card/85 px-4 py-1.5 font-bold text-ink/80 shadow-soft backdrop-blur-md">
+          {ui.storyEndText}
+        </p>
         {/* The whole day, recapped as a timeline. */}
         <div className="panel flex w-full flex-col gap-1.5 p-4 text-left">
           {day.moments.map((m, i) => (
@@ -136,7 +139,7 @@ export function StoryDayView({ day, confirmGlow, onSkyTime, onDone, onExit }: St
             animate={shakeKey > 0 && !solved ? { x: [0, -7, 7, -4, 4, 0] } : { x: 0 }}
             transition={{ duration: 0.4 }}
             className="relative flex aspect-square w-[min(76vw,34vh,20rem)] shrink-0 items-center justify-center lg:w-[min(48vh,25rem)]"
-            style={{ filter: confirmGlow && total % 720 === moment.target % 720 && !solved ? 'drop-shadow(0 0 14px rgba(74,222,128,0.85))' : undefined }}
+            style={{ filter: solved || (confirmGlow && total % 720 === moment.target % 720) ? 'drop-shadow(0 0 14px rgba(74,222,128,0.85))' : undefined }}
           >
             <AnalogClock
               total={total}
@@ -146,6 +149,18 @@ export function StoryDayView({ day, confirmGlow, onSkyTime, onDone, onExit }: St
               show24={false}
             />
             <HintBubble text={hint} visible={attempts >= 2 && !solved} onDismiss={() => setAttempts(1)} />
+            {solved && (
+              <motion.div
+                className="pointer-events-none absolute inset-0 z-10 grid place-items-center"
+                initial={reduce ? false : { scale: 0, rotate: -10 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: 'spring', stiffness: 360, damping: 13 }}
+              >
+                <span className="rounded-full bg-green-500 px-6 py-2.5 font-display text-3xl font-extrabold text-white shadow-panel">
+                  {ui.correctBadge}
+                </span>
+              </motion.div>
+            )}
           </motion.div>
 
           <div className="flex w-full max-w-md shrink-0 flex-col items-center gap-2 sm:gap-3 lg:max-w-sm">
@@ -160,7 +175,9 @@ export function StoryDayView({ day, confirmGlow, onSkyTime, onDone, onExit }: St
               </div>
             </div>
             {attempts > 0 && !solved && (
-              <p className="text-balance text-center text-sm font-bold text-ink/70">{ui.almostTryAgain}</p>
+              <p className="text-balance rounded-full bg-card/85 px-4 py-1.5 text-center text-sm font-bold text-ink/80 shadow-soft backdrop-blur-md">
+                {ui.almostTryAgain}
+              </p>
             )}
             <button type="button" onClick={confirm} disabled={solved} className="btn-sun w-full max-w-xs py-3 text-xl">
               {ui.pronto}
