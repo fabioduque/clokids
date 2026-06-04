@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { useT } from '../lib/i18n'
 
-export type Screen = 'learn' | 'play' | 'quiz' | 'missions' | 'settings'
+export type Screen = 'learn' | 'play' | 'quiz' | 'missions' | 'park' | 'settings'
 
 export interface NavBarProps {
   screen: Screen
@@ -17,6 +17,7 @@ const MAIN_TABS: Array<[Exclude<Screen, 'settings'>, string]> = [
   ['play', '🕐'],
   ['quiz', '❓'],
   ['missions', '🎒'],
+  ['park', '🎪'],
 ]
 
 export function NavBar({ screen, onNavigate, totalStars, playMinutes = 0 }: NavBarProps) {
@@ -27,6 +28,7 @@ export function NavBar({ screen, onNavigate, totalStars, playMinutes = 0 }: NavB
     play: ui.navPlay,
     quiz: ui.navQuiz,
     missions: ui.navMissions,
+    park: ui.navPark,
   }
   // Quiet on initial mount: the star only pulses for stars earned NOW, not for
   // the count restored from storage on page load.
@@ -132,7 +134,7 @@ export function NavBar({ screen, onNavigate, totalStars, playMinutes = 0 }: NavB
 
       {/* Bottom nav: mobile only, big thumb-friendly targets. */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-4 border-t border-cardline bg-card/90 shadow-[0_-6px_20px_rgba(91,52,21,0.16)] backdrop-blur-md sm:hidden"
+        className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t border-cardline bg-card/90 shadow-[0_-6px_20px_rgba(91,52,21,0.16)] backdrop-blur-md sm:hidden"
         aria-label={ui.mainNavAria}
       >
         {MAIN_TABS.map(([s, icon]) => {
@@ -150,14 +152,14 @@ export function NavBar({ screen, onNavigate, totalStars, playMinutes = 0 }: NavB
               }`}
             >
               <span
-                className={`grid h-9 w-14 place-items-center rounded-full text-2xl leading-none transition-colors ${
+                className={`grid h-9 w-12 place-items-center rounded-full text-2xl leading-none transition-colors ${
                   active ? 'bg-ring/15' : 'bg-transparent'
                 }`}
                 aria-hidden
               >
                 {icon}
               </span>
-              <span className="text-sm leading-none">{label}</span>
+              <span className="text-xs leading-none">{label}</span>
             </button>
           )
         })}

@@ -7,10 +7,12 @@ import { LearnView } from './views/LearnView'
 import { QuizView } from './views/QuizView'
 import { LevelMap } from './views/LevelMap'
 import { MissionsLocked, MissionsView } from './views/MissionsView'
+import { ParkView } from './views/ParkView'
 import { SettingsView } from './views/SettingsView'
 import { DEFAULT_PROFILE, loadProfile, saveProfile, type Profile, type Settings } from './lib/profileStore'
 import { playMinutes, shouldSuggestBreak } from './lib/playTimer'
 import { MISSIONS_UNLOCK_COST } from './lib/missions'
+import type { ParkLevel, ZoneId } from './lib/park'
 import { LangContext, STR } from './lib/i18n'
 import { setPreferredVoice, setSpeechRate } from './lib/speak'
 import { loadQuizRound } from './lib/roundStore'
@@ -179,6 +181,23 @@ export default function App() {
     }))
   }
 
+  // Park: best score per zone+level, and completed story days.
+  function recordParkResult(zone: ZoneId, level: ParkLevel, score: number) {
+    setProfile((p) => {
+      const key = `${zone}:${level}`
+      const best = Math.max(p.progress.parkStars[key] ?? 0, score)
+      return { ...p, progress: { ...p.progress, parkStars: { ...p.progress.parkStars, [key]: best } } }
+    })
+  }
+
+  function markStoryDone(dayId: string) {
+    setProfile((p) =>
+      p.progress.casaDays.includes(dayId)
+        ? p
+        : { ...p, progress: { ...p.progress, casaDays: [...p.progress.casaDays, dayId] } },
+    )
+  }
+
   function recordResult(score: number) {
     // Stars are awarded per-correct (see awardStar); here we only record the
     // best score for the level and unlock the next one — no totalStars add, or
@@ -256,6 +275,18 @@ export default function App() {
         {screen === 'missions' &&
           (profile.progress.missionsUnlocked ? (
             <MissionsView onStar={awardStar} onSkyTime={setSkyOverride} />
+          ) : (
+            <MissionsLocked totalStars={profile.progress.totalStars} onUnlock={unlockMissions} />
+          ))}
+        {screen === 'park' &&
+          (profile.progress.missionsUnlocked ? (
+            <ParkView
+              progress={profile.progress}
+              onStar={awardStar}
+              onSkyTime={setSkyOverride}
+              onParkResult={recordParkResult}
+              onStoryDone={markStoryDone}
+            />
           ) : (
             <MissionsLocked totalStars={profile.progress.totalStars} onUnlock={unlockMissions} />
           ))}

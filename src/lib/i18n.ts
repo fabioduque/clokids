@@ -4,6 +4,7 @@
 
 import { createContext, useContext } from 'react'
 import type { Level } from './quiz'
+import type { ZoneId } from './park'
 
 export type Lang = 'pt' | 'en'
 
@@ -86,6 +87,20 @@ export interface UIStrings {
   hintWedge: string
   hintLeave: (time: string) => string
   abandonMissionsAria: string
+  // Parque do Cloki
+  navPark: string
+  parkTitle: string
+  zoneName: (z: ZoneId) => string
+  zoneTagline: (z: ZoneId) => string
+  pronto: string
+  almostTryAgain: string
+  setHint: (h: number, mPos: number) => string
+  backToPark: string
+  casaPick: string
+  storyExitQ: string
+  storyEndTitle: string
+  storyEndText: string
+  zoneLevelAria: (zone: string, level: number) => string
   // Settings
   languageTitle: string
   snapSettingTitle: string
@@ -194,6 +209,26 @@ export const STR: Record<Lang, UIStrings> = {
     hintWedge: 'Apareceu uma fatia vermelha no relógio: conta os minutos dela de 5 em 5.',
     hintLeave: (time) => `Anda para trás a partir das ${time} — a fatia vermelha mostra o caminho. Conta de 5 em 5.`,
     abandonMissionsAria: 'Abandonar a ronda e começar outra',
+    navPark: 'Parque',
+    parkTitle: 'Parque do Cloki',
+    zoneName: (z) => ({ estacao: 'Estação', zoo: 'Zoo', cinema: 'Cinema', oficina: 'Oficina', casa: 'Casa do Cloki' })[z],
+    zoneTagline: (z) =>
+      ({
+        estacao: 'Acerta o relógio!',
+        zoo: 'Quanto tempo falta?',
+        cinema: 'Sai a tempo!',
+        oficina: 'Conserta o relógio maluco!',
+        casa: 'Vive um dia com o Cloki',
+      })[z],
+    pronto: '✅ Pronto!',
+    almostTryAgain: 'Quase! Olha bem e tenta outra vez.',
+    setHint: (h, mPos) => `Pista: ponteiro pequeno e vermelho perto do ${h}; ponteiro grande e azul no ${mPos}.`,
+    backToPark: '← Parque',
+    casaPick: 'Escolhe um dia para viver com o Cloki!',
+    storyExitQ: 'Queres sair da história?',
+    storyEndTitle: 'Fim do dia! 🌙',
+    storyEndText: 'O Cloki viveu o dia todo contigo. Obrigado!',
+    zoneLevelAria: (zone, level) => `Jogar ${zone}, nível ${level}`,
     languageTitle: 'Língua',
     snapSettingTitle: 'Precisão dos minutos',
     snapLabels: { 15: 'Quartos (15 min)', 5: 'Cinco em cinco', 1: 'Minuto a minuto' },
@@ -289,6 +324,26 @@ export const STR: Record<Lang, UIStrings> = {
     hintWedge: 'A red slice appeared on the clock: count its minutes five by five.',
     hintLeave: (time) => `Walk backwards from ${time} — the red slice shows the way. Count five by five.`,
     abandonMissionsAria: 'Abandon the round and start a new one',
+    navPark: 'Park',
+    parkTitle: 'Cloki Park',
+    zoneName: (z) => ({ estacao: 'Station', zoo: 'Zoo', cinema: 'Cinema', oficina: 'Workshop', casa: "Cloki's House" })[z],
+    zoneTagline: (z) =>
+      ({
+        estacao: 'Set the clock!',
+        zoo: 'How long to go?',
+        cinema: 'Leave on time!',
+        oficina: 'Fix the crazy clock!',
+        casa: 'Live a day with Cloki',
+      })[z],
+    pronto: '✅ Done!',
+    almostTryAgain: 'Almost! Look closely and try again.',
+    setHint: (h, mPos) => `Hint: small red hand near the ${h}; big blue hand on the ${mPos}.`,
+    backToPark: '← Park',
+    casaPick: 'Pick a day to live with Cloki!',
+    storyExitQ: 'Do you want to leave the story?',
+    storyEndTitle: 'The day is over! 🌙',
+    storyEndText: 'Cloki lived the whole day with you. Thank you!',
+    zoneLevelAria: (zone, level) => `Play ${zone}, level ${level}`,
     languageTitle: 'Language',
     snapSettingTitle: 'Minute precision',
     snapLabels: { 15: 'Quarters (15 min)', 5: 'Five by five', 1: 'To the minute' },
