@@ -20,7 +20,9 @@ export interface Progress {
   unlockedLevel: Level
   totalStars: number // cumulative stars earned (used by the top-bar; incremented per correct answer by the UI)
   starsByLevel: Record<Level, number> // best score per level (0..5)
-  missionsUnlocked: boolean // one-time unlock of "Missões do Tempo" (costs stars)
+  missionsUnlocked: boolean // one-time unlock of "Missões do Tempo" (costs stars; the Parque honours it too)
+  parkStars: Record<string, number> // best score per park "zone:level" (0..5)
+  casaDays: string[] // ids of completed Casa do Cloki story days
 }
 
 export interface Profile {
@@ -48,6 +50,8 @@ export const DEFAULT_PROFILE: Profile = {
     totalStars: 0,
     starsByLevel: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0 },
     missionsUnlocked: false,
+    parkStars: {},
+    casaDays: [],
   },
 }
 

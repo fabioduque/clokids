@@ -6,6 +6,7 @@
 
 import type { Question, Level } from './quiz'
 import type { Mission } from './missions'
+import type { ParkTask, ZoneId, ParkLevel } from './park'
 
 export interface StoredQuizRound {
   level: Level
@@ -26,8 +27,19 @@ export interface StoredMissionRound {
   elapsedMs: number
 }
 
+export interface StoredParkRound {
+  zone: ZoneId
+  level: ParkLevel
+  tasks: ParkTask[]
+  idx: number
+  score: number
+  startedAt: number
+  elapsedMs: number
+}
+
 const QUIZ_KEY = 'relogio.round.quiz.v1'
 const MISSIONS_KEY = 'relogio.round.missions.v1'
+const PARK_KEY = 'relogio.round.park.v1'
 
 function read<T>(key: string, guard: (v: unknown) => v is T): T | null {
   try {
@@ -80,6 +92,12 @@ function isMissionRound(v: unknown): v is StoredMissionRound {
   return Array.isArray(r.missions) && r.missions.length > 0
 }
 
+function isParkRound(v: unknown): v is StoredParkRound {
+  if (!isRoundBase(v)) return false
+  const r = v as unknown as StoredParkRound
+  return typeof r.zone === 'string' && typeof r.level === 'number' && Array.isArray(r.tasks) && r.tasks.length > 0
+}
+
 export function loadQuizRound(): StoredQuizRound | null {
   const r = read(QUIZ_KEY, isQuizRound)
   // A finished round is stale — treat as absent.
@@ -105,6 +123,19 @@ export function saveMissionRound(round: StoredMissionRound): void {
 
 export function clearMissionRound(): void {
   remove(MISSIONS_KEY)
+}
+
+export function loadParkRound(): StoredParkRound | null {
+  const r = read(PARK_KEY, isParkRound)
+  return r && r.idx < r.tasks.length ? r : null
+}
+
+export function saveParkRound(round: StoredParkRound): void {
+  write(PARK_KEY, round)
+}
+
+export function clearParkRound(): void {
+  remove(PARK_KEY)
 }
 
 /** "1m 32s" / "47s" — for the result screen's time-taken line. */
