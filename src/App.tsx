@@ -282,59 +282,72 @@ export default function App() {
           min-h-0 lets main actually shrink inside the flex column; max-w is
           kept snug on desktop so the composition reads as a group on the sky. */}
       <main className="w-full min-h-0 flex-1 overflow-y-auto px-4 pb-[78px] sm:pb-4 lg:px-8">
-        {screen === 'learn' && <LearnView onGoToPlay={() => navigate('play')} />}
-        {screen === 'play' && (
-          <FreePlayView
-            total={displayTotal}
-            seconds={displaySeconds}
-            onChange={onFreePlayChange}
-            onNow={onNow}
-            settings={profile.settings}
-            onSnapChange={(snap) => updateSettings({ ...profile.settings, snap })}
-          />
-        )}
-        {screen === 'quiz' &&
-          (quizLevel == null ? (
-            <LevelMap progress={profile.progress} onPlay={startLevel} />
-          ) : (
-            <QuizView
-              key={roundId}
-              level={quizLevel}
-              onStar={awardStar}
-              onComplete={recordResult}
-              onRepeat={repeatLevel}
-              onNext={nextLevel}
-              onExit={exitToLevels}
-              nextAvailable={quizLevel < 10 && (quizLevel + 1) <= profile.progress.unlockedLevel}
-              onSkyTime={setSkyOverride}
+        {/* Views keep their min-h-full centring inside this wrapper; it is sized
+            to the viewport MINUS the footer sliver below, so view + footer add
+            up to exactly one screen when content fits (no phantom scrollbar)
+            and the footer trails the content naturally when it scrolls. */}
+        <div className="grid min-h-[calc(100%-1.5rem)]">
+          {screen === 'learn' && <LearnView onGoToPlay={() => navigate('play')} />}
+          {screen === 'play' && (
+            <FreePlayView
+              total={displayTotal}
+              seconds={displaySeconds}
+              onChange={onFreePlayChange}
+              onNow={onNow}
+              settings={profile.settings}
+              onSnapChange={(snap) => updateSettings({ ...profile.settings, snap })}
             />
-          ))}
-        {screen === 'missions' &&
-          (profile.progress.missionsUnlocked ? (
-            <MissionsView onStar={awardStar} onSkyTime={setSkyOverride} />
-          ) : (
-            <MissionsLocked totalStars={profile.progress.totalStars} onUnlock={unlockMissions} />
-          ))}
-        {screen === 'park' &&
-          (profile.progress.missionsUnlocked ? (
-            <ParkView
-              progress={profile.progress}
-              confirmGlow={profile.settings.confirmGlow}
-              onStar={awardStar}
-              onSkyTime={setSkyOverride}
-              onParkResult={recordParkResult}
-              onStoryDone={markStoryDone}
+          )}
+          {screen === 'quiz' &&
+            (quizLevel == null ? (
+              <LevelMap progress={profile.progress} onPlay={startLevel} />
+            ) : (
+              <QuizView
+                key={roundId}
+                level={quizLevel}
+                onStar={awardStar}
+                onComplete={recordResult}
+                onRepeat={repeatLevel}
+                onNext={nextLevel}
+                onExit={exitToLevels}
+                nextAvailable={quizLevel < 10 && (quizLevel + 1) <= profile.progress.unlockedLevel}
+                onSkyTime={setSkyOverride}
+              />
+            ))}
+          {screen === 'missions' &&
+            (profile.progress.missionsUnlocked ? (
+              <MissionsView onStar={awardStar} onSkyTime={setSkyOverride} />
+            ) : (
+              <MissionsLocked totalStars={profile.progress.totalStars} onUnlock={unlockMissions} />
+            ))}
+          {screen === 'park' &&
+            (profile.progress.missionsUnlocked ? (
+              <ParkView
+                progress={profile.progress}
+                confirmGlow={profile.settings.confirmGlow}
+                onStar={awardStar}
+                onSkyTime={setSkyOverride}
+                onParkResult={recordParkResult}
+                onStoryDone={markStoryDone}
+              />
+            ) : (
+              <MissionsLocked totalStars={profile.progress.totalStars} onUnlock={unlockMissions} />
+            ))}
+          {screen === 'settings' && (
+            <SettingsView
+              settings={profile.settings}
+              onSettings={updateSettings}
+              onReset={resetProfile}
             />
-          ) : (
-            <MissionsLocked totalStars={profile.progress.totalStars} onUnlock={unlockMissions} />
-          ))}
-        {screen === 'settings' && (
-          <SettingsView
-            settings={profile.settings}
-            onSettings={updateSettings}
-            onReset={resetProfile}
-          />
-        )}
+          )}
+        </div>
+        {/* Author's note, as discreet as it gets: a 1.5rem sliver at the very
+            end of the content (the wrapper above gives up exactly this much). */}
+        <footer className="flex h-6 items-center justify-center">
+          <span className="rounded-full bg-card/50 px-2 text-[10px] font-bold text-ink/45 backdrop-blur-sm">
+            Feito com <span aria-label="amor">♥</span> para a Sofia e Afonso
+          </span>
+        </footer>
       </main>
 
       {/* Gentle break suggestion after 30 min of play: NON-blocking — one
