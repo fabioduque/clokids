@@ -8,7 +8,6 @@ export interface AnalogClockProps {
   size?: number // px
   show24?: boolean // render the inner 24h numbers
   showMinuteHelp?: boolean // render blue minute values (5, 10, 15…) inside the hour numbers
-  showHandLegend?: boolean // reserved; legend lives in HandLegend
   step?: number // snap step (minutes) for the minute hand; if omitted -> not interactive
   onChange?: (total: number) => void
   seconds?: number | null // 0–59; when a number, draw a thin seconds hand (ticks)
@@ -79,7 +78,6 @@ export function AnalogClock({ total, size = 280, show24 = true, showMinuteHelp =
   }
 
   function applyAngle(deg: number) {
-    const cur = split(total)
     if (dragging.current === 'minute') {
       const raw = Math.round(deg / 6)
       let m = Math.round(raw / step!) * step!
@@ -87,7 +85,7 @@ export function AnalogClock({ total, size = 280, show24 = true, showMinuteHelp =
       onChange!(minuteDragTotal(total, m))
     } else if (dragging.current === 'hour') {
       const h = Math.round(deg / 30) % 12
-      onChange!(mod1440(h * 60 + cur.minute))
+      onChange!(mod1440(h * 60 + split(total).minute))
     }
   }
 
@@ -242,21 +240,18 @@ export function AnalogClock({ total, size = 280, show24 = true, showMinuteHelp =
                 {n === 12 ? 24 : n + 12}
               </text>
             )}
-            {interactive && (() => {
-              const hit = polar(70, n * 30)
-              return (
-                <circle
-                  cx={hit.x}
-                  cy={hit.y}
-                  r={13}
-                  fill="transparent"
-                  style={{ cursor: 'pointer' }}
-                  onPointerDown={() => tapHour(n)}
-                  role="button"
-                  aria-label={`Pôr ponteiro das horas no ${n}`}
-                />
-              )
-            })()}
+            {interactive && (
+              <circle
+                cx={outer.x}
+                cy={outer.y}
+                r={13}
+                fill="transparent"
+                style={{ cursor: 'pointer' }}
+                onPointerDown={() => tapHour(n)}
+                role="button"
+                aria-label={`Pôr ponteiro das horas no ${n}`}
+              />
+            )}
           </g>
         )
       })}

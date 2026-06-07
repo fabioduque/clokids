@@ -125,7 +125,7 @@ export function QuizView({ level, onStar, onComplete, onRepeat, onNext, onExit, 
   }, [idx, done])
   useEffect(() => () => onSkyTime?.(null), [onSkyTime])
 
-  const results = useMemo(() => '⭐'.repeat(score) + '☆'.repeat(ROUND - score), [score, done])
+  const results = useMemo(() => '⭐'.repeat(score) + '☆'.repeat(ROUND - score), [score])
 
   // Record the result exactly once when the round finishes (best score + unlock
   // live in the App). Stars themselves were already awarded per-correct. Also
