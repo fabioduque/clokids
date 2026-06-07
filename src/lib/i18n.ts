@@ -90,6 +90,7 @@ export interface UIStrings {
   // Parque do Cloki
   navPark: string
   parkTitle: string
+  parkPitch: string
   zoneName: (z: ZoneId) => string
   zoneTagline: (z: ZoneId) => string
   pronto: string
@@ -218,6 +219,7 @@ export const STR: Record<Lang, UIStrings> = {
     abandonMissionsAria: 'Abandonar a ronda e começar outra',
     navPark: 'Parque',
     parkTitle: 'Parque do Cloki',
+    parkPitch: 'Estações cheias de relógios para acertar: ajuda o Cloki na estação, no zoo, no cinema e na oficina!',
     zoneName: (z) => ({ estacao: 'Estação', zoo: 'Zoo', cinema: 'Cinema', oficina: 'Oficina', casa: 'Casa do Cloki' })[z],
     zoneTagline: (z) =>
       ({
@@ -340,6 +342,7 @@ export const STR: Record<Lang, UIStrings> = {
     abandonMissionsAria: 'Abandon the round and start a new one',
     navPark: 'Park',
     parkTitle: 'Cloki Park',
+    parkPitch: 'Stations full of clocks to set: help Cloki at the station, the zoo, the cinema and the workshop!',
     zoneName: (z) => ({ estacao: 'Station', zoo: 'Zoo', cinema: 'Cinema', oficina: 'Workshop', casa: "Cloki's House" })[z],
     zoneTagline: (z) =>
       ({

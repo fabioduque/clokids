@@ -19,19 +19,23 @@ const HELP_DELAY_MS = 15_000
 export interface MissionsLockedProps {
   totalStars: number
   onUnlock: () => void
+  // Both areas sit behind the same one-time unlock, but the card should talk
+  // about the area the child actually tapped — Parque, not Missões.
+  area?: 'missions' | 'park'
 }
 
-export function MissionsLocked({ totalStars, onUnlock }: MissionsLockedProps) {
+export function MissionsLocked({ totalStars, onUnlock, area = 'missions' }: MissionsLockedProps) {
   const ui = useT()
   const missing = MISSIONS_UNLOCK_COST - totalStars
+  const isPark = area === 'park'
   return (
     <div className="flex min-h-full flex-col items-center justify-center gap-4 py-6">
       <div className="panel flex w-full max-w-sm flex-col items-center gap-3 p-6 text-center">
         <span className="text-6xl" aria-hidden>
-          🎒
+          {isPark ? '🎪' : '🎒'}
         </span>
-        <h2 className="font-display text-3xl font-extrabold text-ink">{ui.missionsTitle}</h2>
-        <p className="text-pretty font-bold text-ink/70">{ui.missionsPitch}</p>
+        <h2 className="font-display text-3xl font-extrabold text-ink">{isPark ? ui.parkTitle : ui.missionsTitle}</h2>
+        <p className="text-pretty font-bold text-ink/70">{isPark ? ui.parkPitch : ui.missionsPitch}</p>
         {missing > 0 ? (
           <>
             <p className="rounded-full bg-ring/10 px-4 py-2 font-display font-extrabold text-ink">

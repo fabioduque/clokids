@@ -321,7 +321,7 @@ export default function App() {
             (profile.progress.missionsUnlocked ? (
               <MissionsView onStar={awardStar} onSkyTime={setSkyOverride} />
             ) : (
-              <MissionsLocked totalStars={profile.progress.totalStars} onUnlock={unlockMissions} />
+              <MissionsLocked area="missions" totalStars={profile.progress.totalStars} onUnlock={unlockMissions} />
             ))}
           {screen === 'park' &&
             (profile.progress.missionsUnlocked ? (
@@ -334,7 +334,7 @@ export default function App() {
                 onStoryDone={markStoryDone}
               />
             ) : (
-              <MissionsLocked totalStars={profile.progress.totalStars} onUnlock={unlockMissions} />
+              <MissionsLocked area="park" totalStars={profile.progress.totalStars} onUnlock={unlockMissions} />
             ))}
           {screen === 'settings' && (
             <SettingsView
