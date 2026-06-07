@@ -37,11 +37,11 @@ export function LevelMap({ progress, onPlay }: LevelMapProps) {
                   : 'border-cardline bg-card text-ink shadow-soft active:translate-y-1 active:shadow-none'
               }`}
             >
-              <span>
+              <span className="min-w-0">
                 {locked ? '🔒 ' : ''}
                 {ui.levelWord} {lvl} — {ui.levelLabel(lvl)}
               </span>
-              <span className="text-ring">
+              <span className="shrink-0 text-ring">
                 {'⭐'.repeat(stars)}
                 {'☆'.repeat(5 - stars)}
               </span>

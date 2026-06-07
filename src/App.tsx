@@ -97,11 +97,12 @@ export default function App() {
   // (Aprender and Brincar are always on). If the child is INSIDE an area when
   // it's switched off, land softly on Brincar.
   const { showQuiz, showMissions, showPark } = profile.settings
-  const hiddenTabs: Screen[] = [
-    ...(showQuiz ? [] : (['quiz'] as const)),
-    ...(showMissions ? [] : (['missions'] as const)),
-    ...(showPark ? [] : (['park'] as const)),
-  ]
+  const shown: Record<'quiz' | 'missions' | 'park', boolean> = {
+    quiz: showQuiz,
+    missions: showMissions,
+    park: showPark,
+  }
+  const hiddenTabs = (Object.keys(shown) as Array<keyof typeof shown>).filter((t) => !shown[t])
   useEffect(() => {
     if ((screen === 'quiz' && !showQuiz) || (screen === 'missions' && !showMissions) || (screen === 'park' && !showPark)) {
       setScreen('play')
@@ -285,8 +286,10 @@ export default function App() {
         {/* Views keep their min-h-full centring inside this wrapper; it is sized
             to the viewport MINUS the footer sliver below, so view + footer add
             up to exactly one screen when content fits (no phantom scrollbar)
-            and the footer trails the content naturally when it scrolls. */}
-        <div className="grid min-h-[calc(100%-1.5rem)]">
+            and the footer trails the content naturally when it scrolls. The
+            child gets min-w-0 so a wide panel (e.g. the voice <select>) can't
+            blow the flex item past the viewport and force horizontal scroll. */}
+        <div className="flex min-h-[calc(100%-1.5rem)] flex-col [&>*]:min-w-0">
           {screen === 'learn' && <LearnView onGoToPlay={() => navigate('play')} />}
           {screen === 'play' && (
             <FreePlayView

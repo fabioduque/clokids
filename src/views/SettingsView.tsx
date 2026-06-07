@@ -9,6 +9,16 @@ export interface SettingsViewProps {
   onReset: () => void
 }
 
+/** A labelled checkbox row — shared by the helpers and the areas sections. */
+function ToggleRow({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="flex items-center justify-between rounded-xl border border-cardline bg-card px-4 py-3 font-bold text-ink shadow-soft">
+      {label}
+      <input type="checkbox" className="h-6 w-6 accent-ring" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+    </label>
+  )
+}
+
 const SNAPS: Array<Settings['snap']> = [15, 5, 1]
 const LANGS: Array<[Lang, string, string]> = [
   ['pt', '🇵🇹', 'Português'],
@@ -36,7 +46,7 @@ export function SettingsView({ settings, onSettings, onReset }: SettingsViewProp
     ['showPark', `🎪 ${ui.navPark}`],
   ]
   return (
-    <div className="mx-auto flex max-w-md flex-col gap-5 py-6">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-5 py-6">
       {/* Language: flags, Portuguese first (the default). */}
       <section className="panel flex flex-col gap-3 p-5">
         <h3 className="font-display text-xl font-extrabold text-ink">{ui.languageTitle}</h3>
@@ -110,12 +120,7 @@ export function SettingsView({ settings, onSettings, onReset }: SettingsViewProp
       <section className="panel flex flex-col gap-3 p-5">
         <h3 className="font-display text-xl font-extrabold text-ink">{ui.helpersTitle}</h3>
         {toggles.map(([key, label]) => (
-          <label key={key} className="flex items-center justify-between rounded-xl border border-cardline bg-card px-4 py-3 font-bold text-ink shadow-soft">
-            {label}
-            <input type="checkbox" className="h-6 w-6 accent-ring"
-              checked={settings[key] as boolean}
-              onChange={(e) => set(key, e.target.checked as never)} />
-          </label>
+          <ToggleRow key={key} label={label} checked={settings[key] as boolean} onChange={(v) => set(key, v as never)} />
         ))}
       </section>
 
@@ -123,12 +128,7 @@ export function SettingsView({ settings, onSettings, onReset }: SettingsViewProp
         <h3 className="font-display text-xl font-extrabold text-ink">{ui.areasTitle}</h3>
         <p className="text-sm font-bold text-ink/60">{ui.areasHint}</p>
         {areas.map(([key, label]) => (
-          <label key={key} className="flex items-center justify-between rounded-xl border border-cardline bg-card px-4 py-3 font-bold text-ink shadow-soft">
-            {label}
-            <input type="checkbox" className="h-6 w-6 accent-ring"
-              checked={settings[key] as boolean}
-              onChange={(e) => set(key, e.target.checked as never)} />
-          </label>
+          <ToggleRow key={key} label={label} checked={settings[key] as boolean} onChange={(v) => set(key, v as never)} />
         ))}
       </section>
 
