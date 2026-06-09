@@ -33,7 +33,11 @@ export function FreePlayView({ total, onChange, settings, onSnapChange, seconds,
   }
 
   return (
-    <div className="flex min-h-full flex-col items-center justify-center gap-3 py-2 sm:gap-5 sm:py-5 lg:flex-row lg:items-center lg:justify-center lg:gap-12 lg:py-6">
+    <div className="flex min-h-full flex-col items-center justify-center gap-3 py-2 sm:gap-5 sm:py-5 lg:min-h-0 lg:flex-1 lg:flex-row lg:items-center lg:justify-center lg:gap-12 lg:py-6">
+      {/* Invisible counterweight (lg only): same width as the panel so the
+          flex row stays symmetric and the CLOCK lands dead-center on the
+          viewport, with the panel hanging off to its right. */}
+      <div className="hidden shrink-0 lg:block lg:w-[22rem]" aria-hidden />
       {/* Clock stage — sized to fit BOTH width and height (min(vw, vh)) so it
           shrinks on short viewports instead of forcing the panel off-screen.
           The 10:11 ratio reserves a strip under the dial where the two actions
